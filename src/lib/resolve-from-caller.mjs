@@ -135,11 +135,26 @@ export function getStack(skipFn) {
 const THIS_FILE = fileURLToPath(import.meta.url);
 const THIS_DIR = path.dirname(THIS_FILE);
 
+// Find the package root by looking for package.json
+function findPackageRoot(startPath) {
+	let currentPath = startPath;
+	while (currentPath !== path.dirname(currentPath)) {
+		const packageJsonPath = path.join(currentPath, "package.json");
+		if (fs.existsSync(packageJsonPath)) {
+			return currentPath;
+		}
+		currentPath = path.dirname(currentPath);
+	}
+	return null;
+}
+
+const PACKAGE_ROOT = findPackageRoot(THIS_FILE);
+
 /* ---------- base selection (shared) ---------- */
-// Rule you specified:
-// 1) Find the LAST frame whose basename is "slothlet.mjs".
-// 2) Take the NEXT frame; if its basename is "index.[mjs|cjs|js]", take the following one.
-// 3) Fallback: first non-helper frame that isn’t slothlet.mjs.
+// Two-flag state machine for detecting when we've exited package infrastructure:
+// 1) Flag 1: Set when we exit src/ or dist/ directories
+// 2) Flag 2: Set when we exit index.* entry point files
+// 3) Once both flags are set, we've found the actual caller outside the package
 
 /**
  * @function pickPrimaryBaseFile
@@ -148,51 +163,71 @@ const THIS_DIR = path.dirname(THIS_FILE);
  * @returns {string|null} Primary base file path for resolution, null if detection fails
  *
  * @description
- * Find the primary base file using stack trace analysis.
- * Implements sophisticated caller detection algorithm designed for slothlet's module loading patterns.
- * Uses a two-phase approach: locate the last slothlet.mjs frame, then find the actual user code.
+ * Find the primary base file using stack trace analysis with a two-flag state machine.
+ * Tracks when we **exit** from package infrastructure directories/files.
  *
  * Algorithm:
- * 1. Scan stack trace to find the LAST frame whose basename is "slothlet.mjs"
- * 2. Take the NEXT frame after slothlet.mjs
- * 3. If that frame is "index.[mjs|cjs|js]", take the following frame instead
- * 4. Return null if no suitable frame found (fallback will be used)
- *
- * This pattern handles slothlet's loading chain: slothlet.mjs → index.mjs → user-code.mjs
+ * 1. Walk stack trace backwards (from deepest to shallowest calls)
+ * 2. Flag 1: Set when we exit src/ or dist/ folder (transition from src/dist to non-src/dist)
+ * 3. Flag 2: Set when we exit index.* files (transition from index.* to non-index.*)
+ * 4. Once both flags are set, we've fully exited the package infrastructure
+ * 5. Return the current file as the actual caller
  *
  * @example
- * // Stack trace scenario:
- * // 0: pickPrimaryBaseFile() [this function]
- * // 1: resolveWith() [internal helper]
- * // 2: resolvePathFromCaller() [public API]
- * // 3: slothlet.mjs [slothlet loader] ← LAST slothlet.mjs
- * // 4: index.mjs [entry point] ← Skip this
- * // 5: user-code.mjs [actual caller] ← Return this
+ * // Stack trace flow (wisp example):
+ * // 0: src/lib/resolve-from-caller.mjs [in src/]
+ * // 1: src/wisp.mjs [still in src/]
+ * // 2: index.mjs [exited src/ - Flag 1 set]
+ * // 3: user-code.mjs [exited index.* - Flag 2 set, return this!]
  */
 function pickPrimaryBaseFile() {
-	const files = [];
+	let exitedSrcOrDist = false; // Flag 1: Have we exited src/ or dist/?
+	let exitedIndex = false; // Flag 2: Have we exited index.*?
+	let previousWasInSrcOrDist = false;
+	let previousWasIndex = false;
+
 	for (const cs of getStack(pickPrimaryBaseFile)) {
 		const f = toFsPath(cs?.getFileName?.());
 		if (!f) continue;
 		if (f.startsWith?.("node:internal")) continue;
-		files.push(f);
-	}
+		if (f === THIS_FILE) continue;
 
-	let iSloth = -1;
-	for (let i = 0; i < files.length; i++) {
-		if (path.basename(files[i]).toLowerCase() === "slothlet.mjs") iSloth = i;
-	}
-	if (iSloth !== -1) {
-		const j = iSloth + 1;
-		if (j < files.length) {
-			const b = path.basename(files[j]).toLowerCase();
-			if (/^index\.(mjs|cjs|js)$/.test(b) && j + 1 < files.length) return files[j + 1];
-			return files[j];
+		let currentIsInSrcOrDist = false;
+		let currentIsIndex = false;
+
+		// Check if this file is in our package
+		if (PACKAGE_ROOT && f.startsWith(PACKAGE_ROOT + path.sep)) {
+			const relativePath = path.relative(PACKAGE_ROOT, f);
+			const segments = relativePath.split(path.sep);
+
+			// Check if current file is in src/ or dist/
+			currentIsInSrcOrDist = segments[0] === "src" || segments[0] === "dist";
+
+			// Check if current file is index.*
+			currentIsIndex = segments.length === 1 && /^index\.(mjs|cjs|js|ts)$/.test(segments[0]);
 		}
+
+		// Flag 1: Check if we've exited src/dist (was in, now not in)
+		if (previousWasInSrcOrDist && !currentIsInSrcOrDist) {
+			exitedSrcOrDist = true;
+		}
+
+		// Flag 2: Check if we've exited index.* (was index, now not index)
+		if (previousWasIndex && !currentIsIndex) {
+			exitedIndex = true;
+		}
+
+		// If we've exited src/dist, we've found the caller (index.mjs might be optimized away)
+		if (exitedSrcOrDist) {
+			return f;
+		}
+
+		// Update previous state for next iteration
+		previousWasInSrcOrDist = currentIsInSrcOrDist;
+		previousWasIndex = currentIsIndex;
 	}
 	return null;
 }
-
 /**
  * @function pickFallbackBaseFile
  * @internal
@@ -222,13 +257,12 @@ function pickPrimaryBaseFile() {
  * // - Direct API usage without slothlet loader
  */
 function pickFallbackBaseFile() {
+	// Use simpler fallback logic - just find first non-Node.js-internal file
 	for (const cs of getStack(pickFallbackBaseFile)) {
 		const f = toFsPath(cs?.getFileName?.());
 		if (!f) continue;
 		if (f.startsWith?.("node:internal")) continue;
 		if (f === THIS_FILE) continue;
-		if (f.startsWith(THIS_DIR + path.sep)) continue; // helper’s own dir
-		if (path.basename(f).toLowerCase() === "slothlet.mjs") continue;
 		return f;
 	}
 	return THIS_FILE;

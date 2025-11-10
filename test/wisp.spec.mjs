@@ -10,7 +10,7 @@
  */
 
 import { expect } from "chai";
-import { wisp, wispSync } from "../src/wisp.mjs";
+import { wisp, wispSync } from "../index.mjs";
 import path from "node:path";
 
 const testDir = path.join(process.cwd(), "test");
@@ -75,6 +75,12 @@ describe("wisp", () => {
 		const data = await wisp(callerPath);
 		expect(data).to.deep.equal({ caller: "ok" });
 	});
+
+	it("resolves relative paths from caller location", async () => {
+		// This was the core issue - relative paths should resolve from the caller, not from src/
+		const data = await wisp("./fixtures/sample.json");
+		expect(data).to.deep.equal({ foo: "bar", nested: { ok: true } });
+	});
 });
 
 describe("wispSync", () => {
@@ -115,6 +121,12 @@ describe("wispSync", () => {
 		const callerPath = path.resolve(testDir, "fixtures/caller.js");
 		const data = wispSync(callerPath);
 		expect(data).to.deep.equal({ caller: "ok" });
+	});
+
+	it("resolves relative paths from caller location in sync", () => {
+		// This was the core issue - relative paths should resolve from the caller, not from src/
+		const data = wispSync("./fixtures/sample.json");
+		expect(data).to.deep.equal({ foo: "bar", nested: { ok: true } });
 	});
 });
 
