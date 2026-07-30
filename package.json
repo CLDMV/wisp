@@ -1,6 +1,6 @@
 {
 	"name": "@cldmv/wisp",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Version-agnostic JSON importing for Node.js with fallback handling and caller path resolution.",
 	"type": "module",
 	"exports": {
