@@ -133,7 +133,6 @@ export function getStack(skipFn) {
 }
 
 const THIS_FILE = fileURLToPath(import.meta.url);
-const THIS_DIR = path.dirname(THIS_FILE);
 
 // Find the package root by looking for package.json
 function findPackageRoot(startPath) {
@@ -182,6 +181,11 @@ const PACKAGE_ROOT = findPackageRoot(THIS_FILE);
  */
 function pickPrimaryBaseFile() {
 	let exitedSrcOrDist = false; // Flag 1: Have we exited src/ or dist/?
+	// This function's own docstring documents a "Flag 2 set, return this!"
+	// scenario, but nothing reads exitedIndex to return early once it's set --
+	// looks like a pre-existing gap between the documented intent and the
+	// implementation. Left as-is; fixing the behavior is a separate decision
+	// from unblocking lint.
 	let exitedIndex = false; // Flag 2: Have we exited index.*?
 	let previousWasInSrcOrDist = false;
 	let previousWasIndex = false;
@@ -214,6 +218,7 @@ function pickPrimaryBaseFile() {
 
 		// Flag 2: Check if we've exited index.* (was index, now not index)
 		if (previousWasIndex && !currentIsIndex) {
+			// eslint-disable-next-line no-unused-vars -- see the declaration above
 			exitedIndex = true;
 		}
 

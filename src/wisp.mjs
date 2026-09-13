@@ -90,7 +90,7 @@ export async function wisp(input, options = {}) {
 			try {
 				validate(val);
 			} catch (e) {
-				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`);
+				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
 			}
 		}
 		return val;
@@ -105,7 +105,7 @@ export async function wisp(input, options = {}) {
 			try {
 				validate(val);
 			} catch (e) {
-				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`);
+				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
 			}
 		}
 		return val;
@@ -119,7 +119,7 @@ export async function wisp(input, options = {}) {
 				try {
 					validate(val);
 				} catch (e) {
-					throw new Error(`@cldmv/wisp: ${e?.message ?? e}`);
+					throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
 				}
 			}
 			return val;
@@ -127,7 +127,7 @@ export async function wisp(input, options = {}) {
 			if (fallback) {
 				return wisp(fallback, options);
 			}
-			throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: ${e.message}`);
+			throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: ${e.message}`, { cause: e });
 		}
 	}
 
@@ -154,7 +154,7 @@ export async function wisp(input, options = {}) {
  * const data = wispSync('./config.json');
  */
 export function wispSync(input, options = {}) {
-	const { base, validate, reviver, type = "json", fallback } = options;
+	const { base, validate, reviver, fallback } = options;
 	let url;
 	if (input instanceof URL) url = input;
 	else {
@@ -172,7 +172,7 @@ export function wispSync(input, options = {}) {
 			try {
 				validate(val);
 			} catch (e) {
-				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`);
+				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
 			}
 		}
 		return val;
@@ -180,7 +180,7 @@ export function wispSync(input, options = {}) {
 		if (fallback) {
 			return wispSync(fallback, options);
 		}
-		throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: ${e.message}`);
+		throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: ${e.message}`, { cause: e });
 	}
 }
 
