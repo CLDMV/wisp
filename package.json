@@ -65,7 +65,7 @@
 	],
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"@types/node": "^20.8.0",
+		"@types/node": "^26.6.2",
 		"chai": "^4.3.10",
 		"eslint": "^10.10.0",
 		"globals": "^17.12.0",
