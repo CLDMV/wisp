@@ -97,7 +97,8 @@ export async function wisp(input, options = {}) {
 	} catch {}
 
 	try {
-		const mod = await import(url.href, { assert: { type } });
+		// Legacy import assertions (`assert`) for Node 16.14-20.9, which predate `with`; the cast keeps the type checker from rejecting the key.
+		const mod = await import(url.href, /** @type {any} */ ({ assert: { type } }));
 		if (!reviver && !validate) return mod?.default ?? mod;
 		let val = deepClone(mod?.default ?? mod);
 		if (reviver) val = JSON.parse(JSON.stringify(val), reviver);
