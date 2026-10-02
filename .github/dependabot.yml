@@ -72,6 +72,11 @@ updates:
       open-pull-requests-limit: 5
       commit-message:
           prefix: "deps"
+      ignore:
+          # TypeScript 7 breaks coverage measurement; stay on TypeScript 6 until
+          # that is resolved. Minor and patch updates within 6.x still flow.
+          - dependency-name: "typescript"
+            versions: [">=7"]
       groups:
           # vitest and @vitest/coverage-v8 (and other @vitest/* packages) peer
           # each other EXACTLY, so a partial bump (e.g. vitest to 5.0.0 while
