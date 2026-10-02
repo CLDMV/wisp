@@ -15,7 +15,8 @@
 		"lint": "eslint --config .configs/eslint.config.mjs .",
 		"build:types": "tsc",
 		"test:types": "tsc --noEmit",
-		"build:ci": "npm run test && npm run build:types && npm run test:types"
+		"build:ci": "npm run test && npm run build:types && npm run test:types",
+		"fix:headers": "fix-headers --config .configs/fix-headers.json"
 	},
 	"keywords": [
 		"json",
@@ -64,6 +65,8 @@
 		"package.json"
 	],
 	"devDependencies": {
+		"@cldmv/configs": "^1.2.1",
+		"@cldmv/fix-headers": "^2.1.2",
 		"@eslint/js": "^10.0.1",
 		"@types/node": "^26.6.2",
 		"chai": "^6.2.2",
