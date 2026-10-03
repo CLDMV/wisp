@@ -1,3 +1,18 @@
+/**
+ *
+ *	@Project: @cldmv/wisp
+ *	@Filename: /.configs/eslint.config.mjs
+ *	@Date: 2026-09-13T15:59:51-07:00 (1789340391)
+ *	@Author: Nate Corcoran <CLDMV>
+ *	@Email: <Shinrai@users.noreply.github.com>
+ *	-----
+ *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
+ *	@Last modified time: 2026-10-02T15:12:03-07:00 (1790979123)
+ *	-----
+ *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
+ *
+ */
+
 import js from "@eslint/js";
 import globals from "globals";
 import { defineConfig } from "eslint/config";
