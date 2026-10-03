@@ -19,8 +19,9 @@
  * @public
  *
  * @description
- * This module provides CommonJS exports for the wisp and wispSync functions.
- * It uses createRequire to load the ESM implementation and re-exports it.
+ * This module is a thin wrapper: it loads index.mjs through Node's synchronous require(esm)
+ * and re-exports it. It uses a plain require() rather than createRequire so the file keeps
+ * working when bundled by esbuild/webpack.
  *
  * @example
  * const { wisp, wispSync } = require('@cldmv/wisp');
@@ -29,9 +30,18 @@
 
 "use strict";
 
-const { createRequire } = require("module");
-const requireESM = createRequire(__filename);
-const esm = requireESM("./index.mjs");
+// index.cjs is a thin wrapper: it loads index.mjs through Node's synchronous require(esm).
+// Node.js versions without require(esm) would fail with a bare ERR_REQUIRE_ESM, so fail
+// early with a message that says what to do instead.
+if (!process.features?.require_module) {
+	const error = new Error(
+		`@cldmv/wisp: require() needs Node.js ^20.19.0 or >=22.12.0 (this is ${process.version}). On older Node.js, load the package with import() instead.`
+	);
+	error.code = "ERR_REQUIRE_ESM";
+	throw error;
+}
+
+const esm = require("./index.mjs");
 
 module.exports = esm.default;
 module.exports.default = esm.default;
