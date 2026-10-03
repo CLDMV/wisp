@@ -10,7 +10,8 @@
 		}
 	},
 	"scripts": {
-		"test": "mocha --recursive \"test/**/*.mjs\"",
+		"test": "mocha --recursive \"test/**/*.mjs\" && npm run test:cjs",
+		"test:cjs": "node --test test/entry.test.cjs",
 		"test:watch": "mocha --watch \"test/**/*.mjs\"",
 		"lint": "eslint --config .configs/eslint.config.mjs .",
 		"build:types": "tsc",
