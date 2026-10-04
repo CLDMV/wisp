@@ -13,7 +13,7 @@ The wisp module had a fundamental flaw in its caller path resolution system that
 
 ### Error Example
 
-```
+```text
 Error: @cldmv/wisp: Failed to load JSON file at file:///P:/Dropbox/Sync/Documents/CLDMV/repos/tv-control/node_modules/@cldmv/wisp/examples/test-devices.json: ENOENT: no such file or directory
 ```
 
@@ -36,12 +36,12 @@ The issue was in `src/lib/resolve-from-caller.mjs` with multiple contributing fa
 ### Technical Details
 
 **Expected Stack Trace:**
-```
+```text
 user-code.mjs → index.mjs → src/wisp.mjs → src/lib/resolve-from-caller.mjs
 ```
 
 **Actual Stack Trace:**
-```
+```text
 user-code.mjs → src/wisp.mjs → src/lib/resolve-from-caller.mjs
 ```
 

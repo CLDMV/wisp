@@ -2,12 +2,12 @@
  *
  *	@Project: @cldmv/wisp
  *	@Filename: /.configs/eslint.config.mjs
- *	@Date: 2026-09-13T15:59:51-07:00 (1789340391)
+ *	@Date: 2026-08-27T08:03:34-07:00 (1787843014)
  *	@Author: Nate Corcoran <CLDMV>
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T15:12:03-07:00 (1790979123)
+ *	@Last modified time: 2026-10-03T11:39:13-07:00 (1791052753)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -15,23 +15,42 @@
 
 import js from "@eslint/js";
 import globals from "globals";
+import json from "@eslint/json";
+import jsonvPlugin from "@cldmv/eslint-plugin-jsonv";
+import markdown from "@eslint/markdown";
+import css from "@eslint/css";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
 	{
 		ignores: [
-			"node_modules/**",
-			"dist/**",
-			"coverage/**",
 			"tmp/**",
 			"trash/**",
-			"**/package-lock.json",
+			"node_modules/**",
+			"dist/**",
+			"build/**",
+			".git/**",
+			".configs/**",
+			".vscode/**",
+			"coverage/**",
+			"reference/**",
 			"*.min.*",
-			// Test fixtures are deliberately-non-JS data files that happen to
-			// carry a .js extension (wisp's own fallback-loading tests exercise
-			// exactly this "not really parseable as a module" case) -- they're
-			// test data, not source, and were never meant to be linted as JS.
-			"test/fixtures/**"
+			// Deliberately-non-JS data files with a .js extension (fallback-loading tests); test data, not source.
+			"test/fixtures/**",
+			"**/package-lock.json",
+			// Copy file patterns
+			"*copy/",
+			"*copy (*)/",
+			"*copy */",
+			"*copy.*",
+			"*copy (*).*",
+			"*copy *.*",
+			"**/*copy/",
+			"**/*copy (*)/",
+			"**/*copy */",
+			"**/*copy.*",
+			"**/*copy (*).*",
+			"**/*copy *.*"
 		]
 	},
 	{
@@ -48,12 +67,26 @@ export default defineConfig([
 					varsIgnorePattern: "^(_|___.*)$"
 				}
 			],
-			// wisp.mjs's multi-strategy import fallback (try `with`, then
-			// `assert`, then fs.readFile) deliberately swallows each earlier
-			// strategy's failure with an empty catch before trying the next.
+			// wisp's multi-strategy import fallback deliberately swallows each earlier strategy's failure with an empty catch.
 			"no-empty": ["error", { allowEmptyCatch: true }]
 		}
 	},
-	{ files: ["**/*.{js,mjs,cjs}"], languageOptions: { globals: { ...globals.node } } },
-	{ files: ["test/**/*.mjs"], languageOptions: { globals: { ...globals.mocha } } }
+	{ files: ["**/*.js"], languageOptions: { sourceType: "commonjs" } },
+	{ files: ["**/*.{js,mjs,cjs}"], languageOptions: { globals: { ...globals.node, ...globals.browser } } },
+	{ files: ["test/**/*.mjs"], languageOptions: { globals: { ...globals.mocha } } },
+	{ files: ["**/*.json"], plugins: { json }, language: "json/json", extends: ["json/recommended"] },
+	{ files: ["**/*.jsonc"], plugins: { json }, language: "json/jsonc", extends: ["json/recommended"] },
+	{ files: ["**/*.json5"], plugins: { json }, language: "json/json5", extends: ["json/recommended"] },
+	{ files: ["**/*.jsonv"], plugins: { jsonv: jsonvPlugin }, language: "jsonv/jsonv", ...jsonvPlugin.configs.recommended },
+	{
+		files: ["**/*.md"],
+		plugins: { markdown },
+		language: "markdown/gfm",
+		extends: ["markdown/recommended"],
+		rules: {
+			// GitHub alerts like [!NOTE]/[!WARNING] are valid but trip this rule.
+			"markdown/no-missing-label-refs": "off"
+		}
+	},
+	{ files: ["**/*.css"], plugins: { css }, language: "css/css", extends: ["css/recommended"] }
 ]);
