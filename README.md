@@ -160,12 +160,12 @@ const data = wispSync("./config.json", {
 
 ## ⚙️ Options
 
-| Option     | Type       | Description                                                                         |
-| ---------- | ---------- | ----------------------------------------------------------------------------------- |
-| `base`     | string/URL | Base URL for relative path resolution. Defaults to caller's file URL.               |
-| `validate` | function   | Validation function. Receives parsed JSON, should throw on invalid data.            |
-| `reviver`  | function   | JSON.parse reviver function for custom parsing.                                     |
-| `type`     | string     | Import attribute type for `wisp()`'s `import()` attempts. Defaults to `"json"`.      |
+| Option     | Type       | Description                                                                                                                               |
+| ---------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `base`     | string/URL | Base URL for relative path resolution. Defaults to caller's file URL.                                                                     |
+| `validate` | function   | Validation function. Receives parsed JSON, should throw on invalid data.                                                                  |
+| `reviver`  | function   | JSON.parse reviver function for custom parsing.                                                                                           |
+| `type`     | string     | Import attribute type for `wisp()`'s `import()` attempts. Defaults to `"json"`.                                                           |
 | `fallback` | string/URL | File to load instead when `input` cannot be read or parsed (missing, unreadable, or not valid JSON). A `validate` failure throws instead. |
 
 ---
