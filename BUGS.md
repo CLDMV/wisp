@@ -5,7 +5,7 @@
 **Date Reported:** November 10, 2025  
 **Status:** ✅ FIXED  
 **Severity:** Critical  
-**Affected Versions:** v1.0.0  
+**Affected Versions:** v1.0.0
 
 ### Description
 
@@ -18,6 +18,7 @@ Error: @cldmv/wisp: Failed to load JSON file at file:///P:/Dropbox/Sync/Document
 ```
 
 When calling:
+
 ```javascript
 const testDevicesJson = wispSync("../examples/test-devices.json");
 ```
@@ -36,11 +37,13 @@ The issue was in `src/lib/resolve-from-caller.mjs` with multiple contributing fa
 ### Technical Details
 
 **Expected Stack Trace:**
+
 ```text
 user-code.mjs → index.mjs → src/wisp.mjs → src/lib/resolve-from-caller.mjs
 ```
 
 **Actual Stack Trace:**
+
 ```text
 user-code.mjs → src/wisp.mjs → src/lib/resolve-from-caller.mjs
 ```
@@ -57,6 +60,7 @@ Replaced the flawed hardcoded approach with a **generic, package-agnostic** solu
 4. **Removed Hardcoded Names**: No more dependency on specific filenames
 
 **Key Changes:**
+
 - Added `findPackageRoot()` function for dynamic package detection
 - Reimplemented `pickPrimaryBaseFile()` with exit-based detection
 - Simplified logic to handle `index.mjs` optimization
@@ -65,6 +69,7 @@ Replaced the flawed hardcoded approach with a **generic, package-agnostic** solu
 ### Test Coverage
 
 Enhanced test suite to include:
+
 - Proper entry point usage (`index.mjs` instead of `src/wisp.mjs`)
 - Specific relative path resolution tests
 - Real-world usage scenario validation
@@ -75,7 +80,7 @@ Enhanced test suite to include:
 ✅ All existing tests pass  
 ✅ New relative path tests pass  
 ✅ Works through proper entry point  
-✅ Generic solution works for any package structure  
+✅ Generic solution works for any package structure
 
 ### Files Modified
 
