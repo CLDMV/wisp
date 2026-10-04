@@ -115,10 +115,11 @@ export async function wisp(input, options = {}) {
 	// Each import() strategy only has to load the module; validate runs after the strategy loop, so a
 	// rejection is reported as the validation error instead of being treated as a failed strategy.
 	// Legacy import assertions (`assert`) serve Node 16.14-20.9, which predate `with`; the cast keeps the type checker from rejecting the key.
+	const loadWith = async (attributes) => moduleValue(await import(url.href, attributes), reviver, validate);
 	for (const attributes of [{ with: { type } }, /** @type {any} */ ({ assert: { type } })]) {
 		let val;
 		try {
-			val = moduleValue(await import(url.href, attributes), reviver, validate);
+			val = await loadWith(attributes);
 		} catch {
 			continue;
 		}
