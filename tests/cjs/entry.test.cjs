@@ -14,9 +14,10 @@
  */
 
 /**
- * CommonJS entry tests. These run under Node's own test runner (`node --test`), not Vitest:
- * Vitest loads every file through its own module pipeline, so it cannot show whether a plain
- * `require()` of the package works the way it does for a CommonJS consumer.
+ * CommonJS entry tests against the BUILT package (dist/), run under Node's own test runner
+ * (`node --test`, via `npm run test:cjs`, which builds first) — not Vitest: Vitest loads every
+ * file through its own module pipeline, so it cannot show whether a plain `require()` of the
+ * package works the way it does for a CommonJS consumer.
  */
 "use strict";
 
@@ -28,8 +29,8 @@ const path = require("node:path");
 const repoRoot = path.resolve(__dirname, "..", "..");
 
 test("require() returns the same wisp object as import", async () => {
-	const cjs = require("../../index.cjs");
-	const esm = await import("../../index.mjs");
+	const cjs = require("../../dist/index.cjs");
+	const esm = await import("../../dist/index.mjs");
 
 	assert.equal(cjs, esm.default);
 	assert.equal(cjs.default, esm.default);
@@ -42,7 +43,7 @@ test("require() returns the same wisp object as import", async () => {
 test("require() fails with a clear message where Node.js has no require(esm)", () => {
 	// --no-experimental-require-module turns require(esm) off, which is what Node.js
 	// versions before 20.19 / 22.12 look like to the entry.
-	const res = spawnSync(process.execPath, ["--no-experimental-require-module", "-e", "require('./index.cjs')"], {
+	const res = spawnSync(process.execPath, ["--no-experimental-require-module", "-e", "require('./dist/index.cjs')"], {
 		cwd: repoRoot,
 		encoding: "utf8"
 	});

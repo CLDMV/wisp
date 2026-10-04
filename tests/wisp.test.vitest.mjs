@@ -25,7 +25,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { wisp, wispSync } from "../index.mjs";
+import { wisp, wispSync } from "../src/index.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 

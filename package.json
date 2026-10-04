@@ -3,27 +3,39 @@
 	"version": "1.0.7",
 	"description": "Version-agnostic JSON importing for Node.js with fallback handling and caller path resolution.",
 	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.mjs",
+	"types": "./types/index.d.mts",
 	"exports": {
 		".": {
-			"import": "./index.mjs",
-			"require": "./index.cjs"
+			"wisp-dev": {
+				"types": "./types/index.d.mts",
+				"import": "./src/index.mjs",
+				"require": "./src/cjs-shim.cjs"
+			},
+			"types": "./types/index.d.mts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.cjs"
 		}
 	},
 	"scripts": {
+		"build": "tsup",
+		"build:ci": "npm run lint && npm run format:check && npm run types:build && npm run build && npm run test && npm run test:types",
+		"prepack": "npm run types:build && npm run build",
+		"prepare": "node -e \"import('./.githooks/install.mjs').catch(()=>{})\"",
 		"test": "node tests/run-vitest.mjs && npm run test:cjs",
-		"test:cjs": "node --test tests/cjs/entry.test.cjs",
+		"test:cjs": "npm run build && node --test tests/cjs/entry.test.cjs tests/bundle/caller-resolution.test.mjs",
 		"test:watch": "vitest --config .configs/vitest.config.mjs",
 		"coverage": "node tests/run-vitest.mjs --coverage-quiet && npm run test:cjs",
 		"ci:coverage": "npm run coverage",
+		"types:build": "tsc",
+		"types:check": "tsc --noEmit",
+		"test:types": "npm run types:check",
 		"lint": "eslint --config .configs/eslint.config.mjs .",
-		"build:types": "tsc",
-		"test:types": "tsc --noEmit",
-		"build:ci": "npm run lint && npm run format:check && npm run test && npm run build:types && npm run test:types",
-		"fix:headers": "fix-headers --config .configs/fix-headers.json",
-		"prepare": "node -e \"import('./.githooks/install.mjs').catch(()=>{})\"",
 		"lint:fix": "eslint --config .configs/eslint.config.mjs . --fix",
 		"format": "prettier --config .configs/.prettierrc --write .",
-		"format:check": "prettier --config .configs/.prettierrc --check ."
+		"format:check": "prettier --config .configs/.prettierrc --check .",
+		"fix:headers": "fix-headers --config .configs/fix-headers.json"
 	},
 	"keywords": [
 		"json",
@@ -63,13 +75,11 @@
 		"url": "https://github.com/sponsors/shinrai"
 	},
 	"files": [
-		"src/",
+		"dist/",
+		"!dist/**/*.map",
 		"types/",
-		"index.mjs",
-		"index.cjs",
 		"README.md",
-		"LICENSE",
-		"package.json"
+		"LICENSE"
 	],
 	"devDependencies": {
 		"@cldmv/configs": "^1.2.1",
@@ -87,6 +97,7 @@
 		"eslint": "^10.12.0",
 		"globals": "^17.13.0",
 		"prettier": "^3.9.9",
+		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
 		"vitest": "^5.0.3"
 	},

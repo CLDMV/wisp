@@ -1,20 +1,21 @@
 /**
  *
  *	@Project: @cldmv/wisp
- *	@Filename: /index.mjs
+ *	@Filename: /src/index.mjs
  *	@Date: 2025-10-30T15:06:33-07:00 (1761861993)
  *	@Author: Nate Corcoran <CLDMV>
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-02T15:12:05-07:00 (1790979125)
+ *	@Last modified time: 2026-10-03T19:34:10-07:00 (1791081250)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
  */
 
 /**
- * @fileoverview Main entry point for @cldmv/wisp, providing version-agnostic JSON importing.
+ * @fileoverview ESM entry point for @cldmv/wisp, providing version-agnostic JSON importing.
+ * tsup bundles this file into dist/index.mjs (see tsup.config.mjs).
  * @module @cldmv/wisp
  * @public
  *
@@ -33,5 +34,5 @@
  * const data = wispSync('./data.json');
  */
 
-export * from "./src/wisp.mjs";
-export { default } from "./src/wisp.mjs";
+export * from "./wisp.mjs";
+export { default } from "./wisp.mjs";
