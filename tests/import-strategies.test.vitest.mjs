@@ -30,7 +30,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { wisp, wispSync } from "../index.mjs";
+import { wisp, wispSync } from "../src/index.mjs";
 
 const fixtures = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures");
 const sample = path.join(fixtures, "sample.json");

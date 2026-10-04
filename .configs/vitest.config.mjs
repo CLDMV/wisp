@@ -45,8 +45,9 @@ export default defineConfig({
 		reporters: ["dot"],
 		coverage: {
 			provider: "v8",
-			// wisp publishes src/ directly (no dist build), plus the two entry points.
-			include: ["src/**/*.mjs", "index.mjs", "index.cjs"],
+			// Measured on src/ (ESM entry, library and the CJS shim). The published dist/ is
+			// built from it and checked separately by tests/cjs + tests/bundle under node --test.
+			include: ["src/**/*.mjs", "src/**/*.cjs"],
 			exclude: ["**/*.json", "tests/**", "src/types/**"],
 			reporter: ["text", "html", "json-summary", "json"]
 		}
