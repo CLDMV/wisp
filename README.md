@@ -110,7 +110,7 @@ Asynchronously loads JSON from a file.
 - `options` (object, optional):
   - `base` (string | URL, optional): Base URL for resolving relative paths. Defaults to the caller's file URL.
   - `validate` (function, optional): Validation function called with the parsed JSON. Throws if validation fails.
-  - `reviver` (function, optional): Reviver function passed to `JSON.parse`.
+  - `reviver` (function, optional): Reviver function passed to `JSON.parse`. For a module loaded through `import()` that has no default export, `reviver` and `validate` receive a plain-object copy of its exports.
   - `type` (string, optional): Import attribute type used for the `import()` attempts. Defaults to `"json"`; the file-system fallback only runs for `"json"`.
   - `fallback` (string | URL, optional): A second file to load when `input` cannot be read or parsed. A `validate` failure on `input` throws rather than falling back.
 

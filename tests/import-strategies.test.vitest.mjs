@@ -105,6 +105,19 @@ describe("import() with `with` attributes", () => {
 		);
 	});
 
+	it("runs a rejecting validate once instead of once per load strategy", async () => {
+		let calls = 0;
+		await expect(
+			wisp(sample, {
+				validate: () => {
+					calls++;
+					throw new Error("once");
+				}
+			})
+		).rejects.toThrow(/: @cldmv\/wisp: once$/);
+		expect(calls).toBe(1);
+	});
+
 	it("keeps the validation error as the cause", async () => {
 		const original = new Error("nope");
 		const err = await wisp(sample, {
@@ -169,37 +182,62 @@ describe.runIf(retriesFailedImport)("import() with legacy `assert` attributes", 
 		const first = await wisp(url, { type: "javascript" });
 		const second = await wisp(url, { type: "javascript" });
 		expect(second).toBe(first);
-		// A reviver needs a clone, which a namespace object cannot give, on every strategy.
-		await expect(wisp(url, { type: "javascript", reviver: (key, value) => value })).rejects.toThrow(
-			/^@cldmv\/wisp: Unsupported type 'javascript'/
-		);
+		// The cached namespace has no default export, so the reviver gets a plain-object copy of it.
+		const revived = await wisp(url, { type: "javascript", reviver: (key, value) => (key === "other" ? value + 1 : value) });
+		expect(revived).toEqual({ named: "value", other: 3 });
+		// A validation failure on the `with` attempt surfaces as the validation error too.
+		await expect(
+			wisp(url, {
+				type: "javascript",
+				validate: () => {
+					throw "rejected on with";
+				}
+			})
+		).rejects.toThrow(/^@cldmv\/wisp: Failed to load JSON file at file:.*no-default\.mjs\?case=\d+: @cldmv\/wisp: rejected on with$/);
 	});
 
-	it("cannot clone a namespace without a default export, so a reviver ends in the unsupported-type error", async () => {
-		// structuredClone rejects a module namespace object; that failure is swallowed like any
-		// other strategy failure, and the fs.readFile strategy only handles type "json".
-		await expect(wisp(fresh(noDefaultFile), { type: "javascript", reviver: (key, value) => value })).rejects.toThrow(
-			/^@cldmv\/wisp: Unsupported type 'javascript' or failed to load module at file:.*no-default\.mjs\?case=\d+$/
-		);
+	it("applies a reviver to a plain-object copy of a namespace without a default export", async () => {
+		const keys = [];
+		const data = await wisp(fresh(noDefaultFile), {
+			type: "javascript",
+			reviver: (key, value) => {
+				keys.push(key);
+				return key === "named" ? "revived" : value;
+			}
+		});
+		expect(data).toEqual({ named: "revived", other: 2 });
+		expect(Object.getPrototypeOf(data)).toBe(Object.prototype);
+		expect(keys).toEqual(["named", "other", ""]);
 	});
 
-	it("reports a validation failure on a non-JSON module as an unsupported type", async () => {
-		// The `assert` attempt's validation error is swallowed like any other failure, and the
-		// fs.readFile strategy only handles type "json", so the final error is the unsupported-type one.
+	it("validates a plain-object copy of a namespace without a default export", async () => {
+		const seen = [];
+		const data = await wisp(fresh(noDefaultFile), { type: "javascript", validate: (val) => seen.push(val) });
+		expect(data).toEqual({ named: "value", other: 2 });
+		expect(Object.getPrototypeOf(data)).toBe(Object.prototype);
+		expect(seen).toEqual([data]);
+	});
+
+	it("reports a validation failure on a non-JSON module as the validation error", async () => {
+		let calls = 0;
 		const validate = () => {
+			calls++;
 			throw "rejected";
 		};
 		await expect(wisp(fresh(moduleFile), { type: "javascript", validate })).rejects.toThrow(
-			/^@cldmv\/wisp: Unsupported type 'javascript' or failed to load module at file:.*module\.mjs\?case=\d+$/
+			/^@cldmv\/wisp: Failed to load JSON file at file:.*module\.mjs\?case=\d+: @cldmv\/wisp: rejected$/
 		);
-		await expect(
-			wisp(fresh(moduleFile), {
-				type: "javascript",
-				validate: () => {
-					throw new Error("rejected as Error");
-				}
-			})
-		).rejects.toThrow(/^@cldmv\/wisp: Unsupported type 'javascript'/);
+		// The rejection is final: no later strategy loads the module again and re-runs validate.
+		expect(calls).toBe(1);
+		const original = new Error("rejected as Error");
+		const err = await wisp(fresh(moduleFile), {
+			type: "javascript",
+			validate: () => {
+				throw original;
+			}
+		}).catch((e) => e);
+		expect(err.message).toMatch(/: @cldmv\/wisp: rejected as Error$/);
+		expect(err.cause).toBe(original);
 	});
 });
 
