@@ -110,7 +110,7 @@ jobs:
             github_packages_publish_command: ""
             min_node_version: ${{ github.event.inputs.min_node_version || '22.12.0' }}
             max_node_major: ${{ github.event.inputs.max_node_major || '' }} # blank ⇒ inherit the CLDMV/.github reusable default
-            test_command: "npm test" # mocha (test/**/*.mjs)
+            test_command: "npm test" # vitest via @cldmv/vitest-runner (tests/**/*.test.vitest.mjs), then the node:test CJS entry check
             # test_command: "NODE_OPTIONS='--conditions=slothlet-dev' npm test"  # Override NODE_OPTIONS only
             # test_command: "NODE_ENV=test npm test"  # Override NODE_ENV only
             # test_command: "NODE_ENV=test NODE_OPTIONS='--conditions=slothlet-dev' npm test"  # Override both

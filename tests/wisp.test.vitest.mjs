@@ -1,7 +1,7 @@
 /**
  *
  *	@Project: @cldmv/wisp
- *	@Filename: /test/wisp.spec.mjs
+ *	@Filename: /tests/wisp.test.vitest.mjs
  *	@Date: 2025-10-30T15:06:33-07:00 (1761861993)
  *	@Author: Nate Corcoran <CLDMV>
  *	@Email: <Shinrai@users.noreply.github.com>
@@ -24,27 +24,28 @@
  * path resolution, validation, and CJS interop.
  */
 
-import { expect } from "chai";
+import { describe, it, expect } from "vitest";
 import { wisp, wispSync } from "../index.mjs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const testDir = path.join(process.cwd(), "test");
+const testDir = path.dirname(fileURLToPath(import.meta.url));
 
 describe("wisp", () => {
 	it("loads JSON via wisp() async", async () => {
 		const data = await wisp(path.resolve(testDir, "fixtures/sample.json"));
-		expect(data).to.deep.equal({ foo: "bar", nested: { ok: true } });
+		expect(data).toEqual({ foo: "bar", nested: { ok: true } });
 	});
 
 	it("loads JSON via wispSync() sync", () => {
 		const data = wispSync(path.resolve(testDir, "fixtures/sample.json"));
-		expect(data).to.deep.equal({ foo: "bar", nested: { ok: true } });
+		expect(data).toEqual({ foo: "bar", nested: { ok: true } });
 	});
 
 	it("handles absolute paths", async () => {
 		const absPath = path.resolve(testDir, "fixtures/sample.json");
 		const data = await wisp(absPath);
-		expect(data.foo).to.equal("bar");
+		expect(data.foo).toBe("bar");
 	});
 
 	it("validates successfully", async () => {
@@ -52,7 +53,7 @@ describe("wisp", () => {
 			if (!val.foo) throw new Error("missing foo");
 		};
 		const data = await wisp(path.resolve(testDir, "fixtures/sample.json"), { validate });
-		expect(data.foo).to.equal("bar");
+		expect(data.foo).toBe("bar");
 	});
 
 	it("throws on validation failure", async () => {
@@ -63,26 +64,26 @@ describe("wisp", () => {
 			await wisp(path.resolve(testDir, "fixtures/sample.json"), { validate });
 			throw new Error("Expected error was not thrown");
 		} catch (error) {
-			expect(error.message).to.include("@cldmv/wisp: test error");
+			expect(error.message).toContain("@cldmv/wisp: test error");
 		}
 	});
 
 	it("uses reviver function", async () => {
 		const reviver = (key, value) => (key === "foo" ? "modified" : value);
 		const data = await wisp(path.resolve(testDir, "fixtures/sample.json"), { reviver });
-		expect(data.foo).to.equal("modified");
+		expect(data.foo).toBe("modified");
 	});
 
 	it("loads nested JSON", async () => {
 		const data = await wisp(path.resolve(testDir, "fixtures/nested/ok.json"));
-		expect(data).to.deep.equal({ ok: true });
+		expect(data).toEqual({ ok: true });
 	});
 
 	it("handles fallback paths", async () => {
 		const data = await wisp(path.resolve(testDir, "fixtures/nonexistent.json"), {
 			fallback: path.resolve(testDir, "fixtures/sample.json")
 		});
-		expect(data.foo).to.equal("bar");
+		expect(data.foo).toBe("bar");
 	});
 
 	it("does not use the fallback when the primary fails validation", async () => {
@@ -95,13 +96,13 @@ describe("wisp", () => {
 		} catch (e) {
 			err = e;
 		}
-		expect(err, "expected the validation error to be thrown").to.be.an("error");
-		expect(err.message).to.match(/^@cldmv\/wisp: Failed to load JSON file at .*sample\.json: @cldmv\/wisp: primary rejected$/);
+		expect(err, "expected the validation error to be thrown").toBeInstanceOf(Error);
+		expect(err.message).toMatch(/^@cldmv\/wisp: Failed to load JSON file at .*sample\.json: @cldmv\/wisp: primary rejected$/);
 	});
 
 	it("uses the fallback when the primary is invalid JSON", async () => {
 		const data = await wisp(path.resolve(testDir, "fixtures/invalid.json"), { fallback: path.resolve(testDir, "fixtures/sample.json") });
-		expect(data.foo).to.equal("bar");
+		expect(data.foo).toBe("bar");
 	});
 
 	it("validates the fallback data when the primary is missing", async () => {
@@ -114,27 +115,27 @@ describe("wisp", () => {
 		} catch (e) {
 			err = e;
 		}
-		expect(err, "expected the validation error to be thrown").to.be.an("error");
-		expect(err.message).to.include("@cldmv/wisp: fallback rejected");
+		expect(err, "expected the validation error to be thrown").toBeInstanceOf(Error);
+		expect(err.message).toContain("@cldmv/wisp: fallback rejected");
 	});
 
 	it("resolves caller path correctly", async () => {
 		const callerPath = path.resolve(testDir, "fixtures/caller.js");
 		const data = await wisp(callerPath);
-		expect(data).to.deep.equal({ caller: "ok" });
+		expect(data).toEqual({ caller: "ok" });
 	});
 
 	it("resolves relative paths from caller location", async () => {
 		// This was the core issue - relative paths should resolve from the caller, not from src/
 		const data = await wisp("./fixtures/sample.json");
-		expect(data).to.deep.equal({ foo: "bar", nested: { ok: true } });
+		expect(data).toEqual({ foo: "bar", nested: { ok: true } });
 	});
 });
 
 describe("wispSync", () => {
 	it("loads JSON synchronously", () => {
 		const data = wispSync(path.resolve(testDir, "fixtures/sample.json"));
-		expect(data).to.deep.equal({ foo: "bar", nested: { ok: true } });
+		expect(data).toEqual({ foo: "bar", nested: { ok: true } });
 	});
 
 	it("validates synchronously", () => {
@@ -142,27 +143,27 @@ describe("wispSync", () => {
 			if (!val.foo) throw new Error("missing foo");
 		};
 		const data = wispSync(path.resolve(testDir, "fixtures/sample.json"), { validate });
-		expect(data.foo).to.equal("bar");
+		expect(data.foo).toBe("bar");
 	});
 
 	it("throws on sync validation failure", () => {
 		const validate = () => {
 			throw new Error("sync test error");
 		};
-		expect(() => wispSync(path.resolve(testDir, "fixtures/sample.json"), { validate })).to.throw("@cldmv/wisp: sync test error");
+		expect(() => wispSync(path.resolve(testDir, "fixtures/sample.json"), { validate })).toThrow("@cldmv/wisp: sync test error");
 	});
 
 	it("uses reviver in sync", () => {
 		const reviver = (key, value) => (key === "foo" ? "sync modified" : value);
 		const data = wispSync(path.resolve(testDir, "fixtures/sample.json"), { reviver });
-		expect(data.foo).to.equal("sync modified");
+		expect(data.foo).toBe("sync modified");
 	});
 
 	it("handles fallback paths synchronously", () => {
 		const data = wispSync(path.resolve(testDir, "fixtures/nonexistent.json"), {
 			fallback: path.resolve(testDir, "fixtures/sample.json")
 		});
-		expect(data.foo).to.equal("bar");
+		expect(data.foo).toBe("bar");
 	});
 
 	it("does not use the fallback when the primary fails validation in sync", () => {
@@ -171,12 +172,12 @@ describe("wispSync", () => {
 		};
 		expect(() =>
 			wispSync(path.resolve(testDir, "fixtures/sample.json"), { validate, fallback: path.resolve(testDir, "fixtures/nested/ok.json") })
-		).to.throw(/^@cldmv\/wisp: Failed to load JSON file at .*sample\.json: @cldmv\/wisp: primary rejected$/);
+		).toThrow(/^@cldmv\/wisp: Failed to load JSON file at .*sample\.json: @cldmv\/wisp: primary rejected$/);
 	});
 
 	it("uses the fallback when the primary is invalid JSON in sync", () => {
 		const data = wispSync(path.resolve(testDir, "fixtures/invalid.json"), { fallback: path.resolve(testDir, "fixtures/sample.json") });
-		expect(data.foo).to.equal("bar");
+		expect(data.foo).toBe("bar");
 	});
 
 	it("validates the fallback data when the primary is missing in sync", () => {
@@ -185,21 +186,18 @@ describe("wispSync", () => {
 		};
 		expect(() =>
 			wispSync(path.resolve(testDir, "fixtures/nonexistent.json"), { validate, fallback: path.resolve(testDir, "fixtures/sample.json") })
-		).to.throw("@cldmv/wisp: fallback rejected");
+		).toThrow("@cldmv/wisp: fallback rejected");
 	});
 
 	it("resolves caller path correctly in sync", () => {
 		const callerPath = path.resolve(testDir, "fixtures/caller.js");
 		const data = wispSync(callerPath);
-		expect(data).to.deep.equal({ caller: "ok" });
+		expect(data).toEqual({ caller: "ok" });
 	});
 
 	it("resolves relative paths from caller location in sync", () => {
 		// This was the core issue - relative paths should resolve from the caller, not from src/
 		const data = wispSync("./fixtures/sample.json");
-		expect(data).to.deep.equal({ foo: "bar", nested: { ok: true } });
+		expect(data).toEqual({ foo: "bar", nested: { ok: true } });
 	});
 });
-
-// Note: CJS interop test would require separate CJS test file or dynamic require
-// For now, assuming the exports are correct as per index.cjs

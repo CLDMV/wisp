@@ -1,4 +1,4 @@
 {
 	"extends": "@cldmv/configs/fix-headers.json",
-	"excludeFolders": ["test/fixtures"]
+	"excludeFolders": ["tests/fixtures"]
 }
