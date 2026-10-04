@@ -1,7 +1,7 @@
 /**
  *
  *	@Project: @cldmv/wisp
- *	@Filename: /test/entry.test.cjs
+ *	@Filename: /tests/cjs/entry.test.cjs
  *	@Date: 2026-10-03T10:24:25-07:00 (1791048265)
  *	@Author: Nate Corcoran <CLDMV>
  *	@Email: <Shinrai@users.noreply.github.com>
@@ -14,8 +14,8 @@
  */
 
 /**
- * CommonJS entry tests. These run under Node's own test runner (`node --test`), not Mocha:
- * Mocha's `test/**\/*.mjs` glob only picks up ESM specs, so it cannot show whether a plain
+ * CommonJS entry tests. These run under Node's own test runner (`node --test`), not Vitest:
+ * Vitest loads every file through its own module pipeline, so it cannot show whether a plain
  * `require()` of the package works the way it does for a CommonJS consumer.
  */
 "use strict";
@@ -25,11 +25,11 @@ const assert = require("node:assert/strict");
 const { spawnSync } = require("node:child_process");
 const path = require("node:path");
 
-const repoRoot = path.resolve(__dirname, "..");
+const repoRoot = path.resolve(__dirname, "..", "..");
 
 test("require() returns the same wisp object as import", async () => {
-	const cjs = require("../index.cjs");
-	const esm = await import("../index.mjs");
+	const cjs = require("../../index.cjs");
+	const esm = await import("../../index.mjs");
 
 	assert.equal(cjs, esm.default);
 	assert.equal(cjs.default, esm.default);

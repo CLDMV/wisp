@@ -36,7 +36,7 @@ export default defineConfig([
 			"reference/**",
 			"*.min.*",
 			// Deliberately-non-JS data files with a .js extension (fallback-loading tests); test data, not source.
-			"test/fixtures/**",
+			"tests/fixtures/**",
 			"**/package-lock.json",
 			// Copy file patterns
 			"*copy/",
@@ -73,7 +73,22 @@ export default defineConfig([
 	},
 	{ files: ["**/*.js"], languageOptions: { sourceType: "commonjs" } },
 	{ files: ["**/*.{js,mjs,cjs}"], languageOptions: { globals: { ...globals.node, ...globals.browser } } },
-	{ files: ["test/**/*.mjs"], languageOptions: { globals: { ...globals.mocha } } },
+	{
+		files: ["tests/**/*.test.vitest.mjs"],
+		languageOptions: {
+			globals: {
+				beforeAll: true,
+				beforeEach: true,
+				afterAll: true,
+				afterEach: true,
+				describe: true,
+				it: true,
+				expect: true,
+				test: true,
+				vi: true
+			}
+		}
+	},
 	{ files: ["**/*.json"], plugins: { json }, language: "json/json", extends: ["json/recommended"] },
 	{ files: ["**/*.jsonc"], plugins: { json }, language: "json/jsonc", extends: ["json/recommended"] },
 	{ files: ["**/*.json5"], plugins: { json }, language: "json/json5", extends: ["json/recommended"] },
