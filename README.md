@@ -17,6 +17,7 @@ Relative paths resolve from the file that calls wisp, not from wisp's own locati
 ### Latest: v1.0.7 (October 2026)
 
 - **`require()` works in bundles and fails clearly on older Node.js** — `index.cjs` now loads the ESM entry with a plain `require("./index.mjs")` instead of `createRequire(__filename)`, so `require("@cldmv/wisp")` survives esbuild and webpack bundling. On Node.js versions without synchronous `require(esm)`, where `require()` never worked, it now throws an `ERR_REQUIRE_ESM` error that names the supported versions (`^20.19.0` or `>=22.12.0`) and points to `import()`. The ESM entry and the library code are unchanged (#30).
+- **A failed validation throws instead of loading the fallback** — `fallback` is now used only when the primary file cannot be read or parsed; a `validate` rejection is reported as an error, and a fallback that also fails no longer loops forever ([#35](https://github.com/CLDMV/wisp/pull/35)). The package is also relicensed under Apache-2.0 ([#34](https://github.com/CLDMV/wisp/pull/34)).
 - [View full v1.0.7 Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.7.md)
 
 ### Recent Releases
@@ -111,7 +112,7 @@ Asynchronously loads JSON from a file.
   - `validate` (function, optional): Validation function called with the parsed JSON. Throws if validation fails.
   - `reviver` (function, optional): Reviver function passed to `JSON.parse`.
   - `type` (string, optional): Import attribute type used for the `import()` attempts. Defaults to `"json"`; the file-system fallback only runs for `"json"`.
-  - `fallback` (string | URL, optional): A second file to load when `input` cannot be loaded.
+  - `fallback` (string | URL, optional): A second file to load when `input` cannot be read or parsed. A `validate` failure on `input` throws rather than falling back.
 
 #### Returns
 
@@ -165,7 +166,7 @@ const data = wispSync("./config.json", {
 | `validate` | function   | Validation function. Receives parsed JSON, should throw on invalid data.            |
 | `reviver`  | function   | JSON.parse reviver function for custom parsing.                                     |
 | `type`     | string     | Import attribute type for `wisp()`'s `import()` attempts. Defaults to `"json"`.      |
-| `fallback` | string/URL | File to load instead when `input` cannot be loaded (missing, unreadable, invalid). |
+| `fallback` | string/URL | File to load instead when `input` cannot be read or parsed (missing, unreadable, or not valid JSON). A `validate` failure throws instead. |
 
 ---
 
