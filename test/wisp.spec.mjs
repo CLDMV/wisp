@@ -85,6 +85,39 @@ describe("wisp", () => {
 		expect(data.foo).to.equal("bar");
 	});
 
+	it("does not use the fallback when the primary fails validation", async () => {
+		const validate = (val) => {
+			if (val.foo) throw new Error("primary rejected");
+		};
+		let err;
+		try {
+			await wisp(path.resolve(testDir, "fixtures/sample.json"), { validate, fallback: path.resolve(testDir, "fixtures/nested/ok.json") });
+		} catch (e) {
+			err = e;
+		}
+		expect(err, "expected the validation error to be thrown").to.be.an("error");
+		expect(err.message).to.match(/^@cldmv\/wisp: Failed to load JSON file at .*sample\.json: @cldmv\/wisp: primary rejected$/);
+	});
+
+	it("uses the fallback when the primary is invalid JSON", async () => {
+		const data = await wisp(path.resolve(testDir, "fixtures/invalid.json"), { fallback: path.resolve(testDir, "fixtures/sample.json") });
+		expect(data.foo).to.equal("bar");
+	});
+
+	it("validates the fallback data when the primary is missing", async () => {
+		const validate = () => {
+			throw new Error("fallback rejected");
+		};
+		let err;
+		try {
+			await wisp(path.resolve(testDir, "fixtures/nonexistent.json"), { validate, fallback: path.resolve(testDir, "fixtures/sample.json") });
+		} catch (e) {
+			err = e;
+		}
+		expect(err, "expected the validation error to be thrown").to.be.an("error");
+		expect(err.message).to.include("@cldmv/wisp: fallback rejected");
+	});
+
 	it("resolves caller path correctly", async () => {
 		const callerPath = path.resolve(testDir, "fixtures/caller.js");
 		const data = await wisp(callerPath);
@@ -130,6 +163,29 @@ describe("wispSync", () => {
 			fallback: path.resolve(testDir, "fixtures/sample.json")
 		});
 		expect(data.foo).to.equal("bar");
+	});
+
+	it("does not use the fallback when the primary fails validation in sync", () => {
+		const validate = (val) => {
+			if (val.foo) throw new Error("primary rejected");
+		};
+		expect(() =>
+			wispSync(path.resolve(testDir, "fixtures/sample.json"), { validate, fallback: path.resolve(testDir, "fixtures/nested/ok.json") })
+		).to.throw(/^@cldmv\/wisp: Failed to load JSON file at .*sample\.json: @cldmv\/wisp: primary rejected$/);
+	});
+
+	it("uses the fallback when the primary is invalid JSON in sync", () => {
+		const data = wispSync(path.resolve(testDir, "fixtures/invalid.json"), { fallback: path.resolve(testDir, "fixtures/sample.json") });
+		expect(data.foo).to.equal("bar");
+	});
+
+	it("validates the fallback data when the primary is missing in sync", () => {
+		const validate = () => {
+			throw new Error("fallback rejected");
+		};
+		expect(() =>
+			wispSync(path.resolve(testDir, "fixtures/nonexistent.json"), { validate, fallback: path.resolve(testDir, "fixtures/sample.json") })
+		).to.throw("@cldmv/wisp: fallback rejected");
 	});
 
 	it("resolves caller path correctly in sync", () => {

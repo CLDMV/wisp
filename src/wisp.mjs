@@ -52,6 +52,23 @@ function deepClone(v) {
 }
 
 /**
+ * Runs the caller's validation on a loaded value, throwing the wisp-prefixed load error when it rejects the data.
+ * @private
+ * @param {((val: any) => void)|undefined} validate - Validation function, if any.
+ * @param {*} val - The parsed JSON value.
+ * @param {URL} url - The URL the value was loaded from.
+ * @returns {void}
+ */
+function runValidate(validate, val, url) {
+	if (!validate) return;
+	try {
+		validate(val);
+	} catch (e) {
+		throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: @cldmv/wisp: ${e?.message ?? e}`, { cause: e });
+	}
+}
+
+/**
  * Asynchronously loads JSON from a file, trying modern import with 'with', then 'assert', then fs.
  * @public
  * @param {string|URL} input - The path or URL to the JSON file.
@@ -115,23 +132,20 @@ export async function wisp(input, options = {}) {
 	} catch {}
 
 	if (type === "json") {
+		let val;
 		try {
 			const txt = await readFile(url, "utf8");
-			const val = deepClone(JSON.parse(txt, reviver));
-			if (validate) {
-				try {
-					validate(val);
-				} catch (e) {
-					throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
-				}
-			}
-			return val;
+			val = deepClone(JSON.parse(txt, reviver));
 		} catch (e) {
+			// Only a primary that cannot be read or parsed falls through to the fallback; the fallback itself gets no further fallback.
 			if (fallback) {
-				return wisp(fallback, options);
+				return wisp(fallback, { ...options, fallback: undefined });
 			}
 			throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: ${e.message}`, { cause: e });
 		}
+		// A validation failure on a loaded primary is the caller's rejection, never a reason to use the fallback.
+		runValidate(validate, val, url);
+		return val;
 	}
 
 	throw new Error(`@cldmv/wisp: Unsupported type '${type}' or failed to load module at ${url.href}`);
@@ -168,23 +182,20 @@ export function wispSync(input, options = {}) {
 		else url = new URL(resolveUrlFromCaller(s));
 	}
 
+	let val;
 	try {
 		const txt = fs.readFileSync(url, "utf8");
-		const val = deepClone(JSON.parse(txt, reviver));
-		if (validate) {
-			try {
-				validate(val);
-			} catch (e) {
-				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
-			}
-		}
-		return val;
+		val = deepClone(JSON.parse(txt, reviver));
 	} catch (e) {
+		// Only a primary that cannot be read or parsed falls through to the fallback; the fallback itself gets no further fallback.
 		if (fallback) {
-			return wispSync(fallback, options);
+			return wispSync(fallback, { ...options, fallback: undefined });
 		}
 		throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: ${e.message}`, { cause: e });
 	}
+	// A validation failure on a loaded primary is the caller's rejection, never a reason to use the fallback.
+	runValidate(validate, val, url);
+	return val;
 }
 
 export default wisp;
