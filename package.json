@@ -16,8 +16,12 @@
 		"lint": "eslint --config .configs/eslint.config.mjs .",
 		"build:types": "tsc",
 		"test:types": "tsc --noEmit",
-		"build:ci": "npm run test && npm run build:types && npm run test:types",
-		"fix:headers": "fix-headers --config .configs/fix-headers.json"
+		"build:ci": "npm run lint && npm run format:check && npm run test && npm run build:types && npm run test:types",
+		"fix:headers": "fix-headers --config .configs/fix-headers.json",
+		"prepare": "node -e \"import('./.githooks/install.mjs').catch(()=>{})\"",
+		"lint:fix": "eslint --config .configs/eslint.config.mjs . --fix",
+		"format": "prettier --config .configs/.prettierrc --write .",
+		"format:check": "prettier --config .configs/.prettierrc --check ."
 	},
 	"keywords": [
 		"json",
@@ -67,13 +71,20 @@
 	],
 	"devDependencies": {
 		"@cldmv/configs": "^1.2.1",
+		"@cldmv/eslint-plugin-jsonv": "^1.0.15",
 		"@cldmv/fix-headers": "^2.1.2",
+		"@cldmv/jsonv": "^1.1.3",
+		"@cldmv/prettier-plugin-jsonv": "^1.1.3",
+		"@eslint/css": "^2.0.0",
 		"@eslint/js": "^10.0.1",
+		"@eslint/json": "^2.1.0",
+		"@eslint/markdown": "^8.0.3",
 		"@types/node": "^26.6.2",
 		"chai": "^6.2.2",
-		"eslint": "^10.10.0",
-		"globals": "^17.12.0",
+		"eslint": "^10.12.0",
+		"globals": "^17.13.0",
 		"mocha": "^12.0.1",
+		"prettier": "^3.9.9",
 		"typescript": "^6.0.3"
 	},
 	"publishConfig": {
