@@ -21,9 +21,10 @@
  * @private
  *
  * @description
- * Node.js 22+ ignores the legacy `assert` key, so a module that `with { type }` rejects
- * (an unsupported `type` such as "javascript") is imported by the `assert` attempt with no
- * attributes at all. That is how these tests reach the second strategy on a current Node.js.
+ * On Node.js 24+, a module that `with { type }` rejects (an unsupported `type` such as
+ * "javascript") is imported by the `assert` retry of the same URL, because a failed import is
+ * not cached. That is how these tests reach the second strategy. Node.js 20 and 22 cache the
+ * failure, so there the tests check that wisp reports the unsupported type instead.
  */
 
 import { describe, it, expect, vi, afterEach } from "vitest";
@@ -115,7 +116,14 @@ describe("import() with `with` attributes", () => {
 	});
 });
 
-describe("import() with legacy `assert` attributes", () => {
+// Node.js 24+ does not cache a failed import: after `with { type: "javascript" }` rejects a URL,
+// the `assert` retry of that same URL loads it. Node.js 20 and 22 cache the failure, so the retry
+// is rejected with the same error and wisp reports the unsupported type. The `assert` strategy can
+// only be reached this way on Node.js 24+, so those tests run there; older versions check the error.
+const nodeMajor = Number(process.versions.node.split(".")[0]);
+const retriesFailedImport = nodeMajor >= 24;
+
+describe.runIf(retriesFailedImport)("import() with legacy `assert` attributes", () => {
 	// Node.js only checks import attributes on a module's first load; once a URL is in the module
 	// cache, a later `with { type: "javascript" }` import of it succeeds. Each test therefore loads
 	// its own URL (a unique query string makes a separate module instance) so the `with` attempt
@@ -195,6 +203,15 @@ describe("import() with legacy `assert` attributes", () => {
 	});
 });
 
+describe.skipIf(retriesFailedImport)("import() of an unsupported type on Node.js < 24", () => {
+	let counter = 0;
+	const fresh = (file) => `${pathToFileURL(path.join(fixtures, file)).href}?legacy=${++counter}`;
+
+	it("reports the unsupported type, because the failed `with` import is cached for that URL", async () => {
+		await expect(wisp(fresh("module.mjs"), { type: "javascript" })).rejects.toThrow(/^@cldmv\/wisp: Unsupported type 'javascript'/);
+		await expect(wisp(fresh("no-default.mjs"), { type: "javascript" })).rejects.toThrow(/^@cldmv\/wisp: Unsupported type 'javascript'/);
+	});
+});
 describe("fs.readFile fallback", () => {
 	it("reads JSON content that import() cannot load (a .js file holding JSON)", async () => {
 		const data = await wisp(path.join(fixtures, "caller.js"), { reviver: (key, value) => (key === "caller" ? "revived" : value) });
