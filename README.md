@@ -150,4 +150,4 @@ try {
 
 ## License
 
-MIT © CLDMV Inc.
+Apache-2.0 © CLDMV Inc. See [LICENSE](https://github.com/CLDMV/wisp/blob/master/LICENSE) for the full text.
