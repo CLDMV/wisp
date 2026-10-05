@@ -41,14 +41,43 @@ import { resolveUrlFromCaller } from "./lib/resolve-from-caller.mjs";
  * @param {*} v - The value to clone.
  * @returns {*} The cloned value.
  */
-/**
- * Deep clones a value using structuredClone if available, otherwise JSON.parse/stringify.
- * @private
- * @param {*} v - The value to clone.
- * @returns {*} The cloned value.
- */
 function deepClone(v) {
 	return typeof globalThis.structuredClone === "function" ? globalThis.structuredClone(v) : JSON.parse(JSON.stringify(v));
+}
+
+/**
+ * Picks the value a loaded module provides: its default export, or the namespace when it has none.
+ * With a reviver or validate the value is copied so the module cache is never mutated; a namespace
+ * object cannot be structured-cloned, so it is first copied to a plain object of its exports.
+ * @private
+ * @param {Record<string, any>} mod - The module namespace returned by import().
+ * @param {((this: any, key: string, value: any) => any)|undefined} reviver - Reviver function, if any.
+ * @param {((val: any) => void)|undefined} validate - Validation function, if any.
+ * @returns {*} The module's value, copied when a reviver or validate is given.
+ */
+function moduleValue(mod, reviver, validate) {
+	const value = mod.default ?? mod;
+	if (!reviver && !validate) return value;
+	const data = value === mod ? { ...mod } : value;
+	// JSON.parse already returns a fresh value, so a reviver needs no separate clone.
+	return reviver ? JSON.parse(JSON.stringify(data), reviver) : deepClone(data);
+}
+
+/**
+ * Runs the caller's validation on a loaded value, throwing the wisp-prefixed load error when it rejects the data.
+ * @private
+ * @param {((val: any) => void)|undefined} validate - Validation function, if any.
+ * @param {*} val - The loaded value.
+ * @param {URL} url - The URL the value was loaded from.
+ * @returns {void}
+ */
+function runValidate(validate, val, url) {
+	if (!validate) return;
+	try {
+		validate(val);
+	} catch (e) {
+		throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: @cldmv/wisp: ${e?.message ?? e}`, { cause: e });
+	}
 }
 
 /**
@@ -83,55 +112,36 @@ export async function wisp(input, options = {}) {
 		else url = new URL(resolveUrlFromCaller(s));
 	}
 
-	try {
-		const mod = await import(url.href, { with: { type } });
-		if (!reviver && !validate) return mod?.default ?? mod;
-		let val = deepClone(mod?.default ?? mod);
-		if (reviver) val = JSON.parse(JSON.stringify(val), reviver);
-		if (validate) {
-			try {
-				validate(val);
-			} catch (e) {
-				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
-			}
+	// Each import() strategy only has to load the module; validate runs after the strategy loop, so a
+	// rejection is reported as the validation error instead of being treated as a failed strategy.
+	// Legacy import assertions (`assert`) serve Node 16.14-20.9, which predate `with`; the cast keeps the type checker from rejecting the key.
+	const loadWith = async (attributes) => moduleValue(await import(url.href, attributes), reviver, validate);
+	for (const attributes of [{ with: { type } }, /** @type {any} */ ({ assert: { type } })]) {
+		let val;
+		try {
+			val = await loadWith(attributes);
+		} catch {
+			continue;
 		}
+		runValidate(validate, val, url);
 		return val;
-	} catch {}
-
-	try {
-		// Legacy import assertions (`assert`) for Node 16.14-20.9, which predate `with`; the cast keeps the type checker from rejecting the key.
-		const mod = await import(url.href, /** @type {any} */ ({ assert: { type } }));
-		if (!reviver && !validate) return mod?.default ?? mod;
-		let val = deepClone(mod?.default ?? mod);
-		if (reviver) val = JSON.parse(JSON.stringify(val), reviver);
-		if (validate) {
-			try {
-				validate(val);
-			} catch (e) {
-				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
-			}
-		}
-		return val;
-	} catch {}
+	}
 
 	if (type === "json") {
+		let val;
 		try {
 			const txt = await readFile(url, "utf8");
-			const val = deepClone(JSON.parse(txt, reviver));
-			if (validate) {
-				try {
-					validate(val);
-				} catch (e) {
-					throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
-				}
-			}
-			return val;
+			val = deepClone(JSON.parse(txt, reviver));
 		} catch (e) {
+			// Only a primary that cannot be read or parsed falls through to the fallback; the fallback itself gets no further fallback.
 			if (fallback) {
-				return wisp(fallback, options);
+				return wisp(fallback, { ...options, fallback: undefined });
 			}
 			throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: ${e.message}`, { cause: e });
 		}
+		// A validation failure on a loaded primary is the caller's rejection, never a reason to use the fallback.
+		runValidate(validate, val, url);
+		return val;
 	}
 
 	throw new Error(`@cldmv/wisp: Unsupported type '${type}' or failed to load module at ${url.href}`);
@@ -168,23 +178,20 @@ export function wispSync(input, options = {}) {
 		else url = new URL(resolveUrlFromCaller(s));
 	}
 
+	let val;
 	try {
 		const txt = fs.readFileSync(url, "utf8");
-		const val = deepClone(JSON.parse(txt, reviver));
-		if (validate) {
-			try {
-				validate(val);
-			} catch (e) {
-				throw new Error(`@cldmv/wisp: ${e?.message ?? e}`, { cause: e });
-			}
-		}
-		return val;
+		val = deepClone(JSON.parse(txt, reviver));
 	} catch (e) {
+		// Only a primary that cannot be read or parsed falls through to the fallback; the fallback itself gets no further fallback.
 		if (fallback) {
-			return wispSync(fallback, options);
+			return wispSync(fallback, { ...options, fallback: undefined });
 		}
 		throw new Error(`@cldmv/wisp: Failed to load JSON file at ${url.href}: ${e.message}`, { cause: e });
 	}
+	// A validation failure on a loaded primary is the caller's rejection, never a reason to use the fallback.
+	runValidate(validate, val, url);
+	return val;
 }
 
 export default wisp;

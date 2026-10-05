@@ -323,6 +323,8 @@ function pickFallbackBaseFile() {
  * );
  */
 function resolveWith(rel, makePrimary, exists, makeFallback) {
+	// Unreachable through the exported wrappers: both call path.isAbsolute(rel) first, which already throws a TypeError for a non-string.
+	/* v8 ignore next */
 	if (typeof rel !== "string") throw new TypeError("rel must be a string");
 
 	// absolute / already-URL cases are handled in the public wrappers
