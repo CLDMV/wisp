@@ -14,19 +14,17 @@ Relative paths resolve from the file that calls wisp, not from wisp's own locati
 
 ## ✨ What's New
 
-### Latest: v1.0.7 (October 2026)
+### Latest: v1.0.8 (October 2026)
 
-- **`require()` works in bundles and fails clearly on older Node.js** — `index.cjs` now loads the ESM entry with a plain `require("./index.mjs")` instead of `createRequire(__filename)`, so `require("@cldmv/wisp")` survives esbuild and webpack bundling. On Node.js versions without synchronous `require(esm)`, where `require()` never worked, it now throws an `ERR_REQUIRE_ESM` error that names the supported versions (`^20.19.0` or `>=22.12.0`) and points to `import()` ([#30](https://github.com/CLDMV/wisp/pull/30)).
-- **A failed validation throws instead of loading the fallback** — `fallback` is now used only when the primary file cannot be read or parsed; a `validate` rejection is reported as an error, and a fallback that also fails no longer loops forever ([#35](https://github.com/CLDMV/wisp/pull/35)). On the `import()` paths, a `validate` rejection now throws the validation error once instead of `Unsupported type`, and `reviver` / `validate` on a module without a default export receive a plain-object copy of its exports instead of failing ([#41](https://github.com/CLDMV/wisp/pull/41)). The package is also relicensed under Apache-2.0 ([#34](https://github.com/CLDMV/wisp/pull/34)).
-- **Built package in `dist/`** — the published package is now bundled with tsup into `dist/index.mjs`, with `dist/index.cjs` as a thin `require()` wrapper, and ships only `dist/`, `types/`, `README.md` and `LICENSE`. `import` and `require()` of `@cldmv/wisp` work exactly as before; code that loaded the old root `index.mjs` / `index.cjs` or `src/` files by path must use the package specifier ([#40](https://github.com/CLDMV/wisp/pull/40)). The test suite now runs on `@cldmv/vitest-runner` with 100% coverage ([#37](https://github.com/CLDMV/wisp/pull/37)).
-- [View full v1.0.7 Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.7.md)
+- **Development-dependency patch, no runtime change** — `@types/node` moves from 26.6.3 to 26.6.4 in the lockfile ([#46](https://github.com/CLDMV/wisp/pull/46)). The published package differs from v1.0.7 only in its `version` field.
+- [View full v1.0.8 Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.8.md)
 
 ### Recent Releases
 
+- **v1.0.7** (October 2026) — `require()` works inside esbuild and webpack bundles and fails clearly on older Node.js; a failed `validate` throws instead of loading the `fallback`; the package is now built into `dist/` and relicensed under Apache-2.0 ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.7.md))
 - **v1.0.6** (October 2026) — Uniform file headers via `@cldmv/fix-headers`, a CI fix and a development-dependency security update; no runtime change ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.6.md))
 - **v1.0.5** (October 2026) — First npm release since v1.0.1; TypeScript 6, chai 6 and `@types/node` 26 for development, v4 workflow syncs; no runtime change ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.5.md))
 - **v1.0.4** (September 2026) — Thrown errors now carry the original error as `cause`; ESLint wired up; mocha 12 ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.4.md))
-- **v1.0.3** (August 2026) — Development-dependency security update (`picomatch`); no runtime change ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.3.md))
 
 📚 **For complete version history and detailed release notes, see the [docs/changelog/](https://github.com/CLDMV/wisp/tree/master/docs/changelog/) folder.**
 
