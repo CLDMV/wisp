@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-03T10:24:25-07:00 (1791048265)
+ *	@Last modified time: 2026-11-01T13:14:15-08:00 (1793567655)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -50,6 +50,6 @@ test("require() fails with a clear message where Node.js has no require(esm)", (
 
 	assert.notEqual(res.status, 0);
 	assert.match(res.stderr, /ERR_REQUIRE_ESM/);
-	assert.match(res.stderr, /require\(\) needs Node\.js \^20\.19\.0 or >=22\.12\.0/);
+	assert.match(res.stderr, /require\(\) needs Node\.js >=22\.22\.0/);
 	assert.match(res.stderr, /import\(\)/);
 });

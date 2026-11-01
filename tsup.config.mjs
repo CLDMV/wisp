@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-03T19:34:10-07:00 (1791081250)
+ *	@Last modified time: 2026-11-01T13:14:16-08:00 (1793567656)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -17,16 +17,17 @@
  * @fileoverview Bundler config — produces the published dist/ output from src/.
  *
  *  - dist/index.mjs — the real esbuild bundle of src/index.mjs (ESM, minified).
- *  - dist/index.cjs — NOT a second bundle: src/cjs-shim.cjs is copied in verbatim by
+ *  - dist/index.cjs — NOT a second bundle: src/index.cjs is copied in verbatim by
  *    onSuccess below. Node's require() loads an ES module synchronously when it has no
- *    top-level await (the ESM build has none), so the shim just requires ./index.mjs.
+ *    top-level await (the ESM build has none), so the CJS entry just requires ./index.mjs,
+ *    which is its sibling in both src/ and dist/.
  *
  * Constraints:
- *  - `target: "node16"` matches package.json `engines` (>=16) — `import` of the ESM build
- *    keeps working there; only require() needs require(esm) (see src/cjs-shim.cjs).
+ *  - `target: "node20"` is the syntax level; package.json `engines` is >=22.22.0, the floor
+ *    the CJS entry needs for require(esm) (see src/index.cjs).
  *  - `supported["import-attributes"]` keeps esbuild from rejecting the
  *    `import(url, { with: { type } })` / `{ assert: { type } }` calls in src/wisp.mjs for a
- *    node16 target. They are runtime feature probes: wisp tries `with`, then `assert`, then
+ *    node20 target. They are runtime feature probes: wisp tries `with`, then `assert`, then
  *    fs, so they must reach Node exactly as written. Their `type` is a variable, so esbuild
  *    reports `unsupported-dynamic-import` (it cannot follow them, and must not); that
  *    expected warning is silenced.
@@ -51,7 +52,7 @@ export default defineConfig({
 	outExtension() {
 		return { js: ".mjs" };
 	},
-	target: "node16",
+	target: "node20",
 	platform: "node",
 	splitting: false,
 	sourcemap: true,
@@ -65,6 +66,6 @@ export default defineConfig({
 		options.logOverride = { ...options.logOverride, "unsupported-dynamic-import": "silent" };
 	},
 	onSuccess() {
-		copyFileSync("src/cjs-shim.cjs", "dist/index.cjs");
+		copyFileSync("src/index.cjs", "dist/index.cjs");
 	}
 });
