@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T12:07:04-08:00 (1793563624)
+ *	@Last modified time: 2026-11-01T12:09:44-08:00 (1793563784)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -70,7 +70,7 @@ describe("src/index.cjs", () => {
 		expect(err).toBeInstanceOf(Error);
 		expect(err.code).toBe("ERR_REQUIRE_ESM");
 		expect(err.message).toMatch(
-			/^@cldmv\/wisp: require\(\) needs Node\.js \^20\.19\.0 or >=22\.12\.0 \(this is v[\d.]+\)\. On older Node\.js, load the package with import\(\) instead\.$/
+			/^@cldmv\/wisp: require\(\) needs Node\.js \^20\.19\.0 or >=22\.13\.0 \(this is v[\d.]+\)\. On older Node\.js, load the package with import\(\) instead\.$/
 		);
 	});
 });

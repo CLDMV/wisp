@@ -56,8 +56,7 @@ Relative paths resolve from the file that calls wisp, not from wisp's own locati
 
 ### Requirements
 
-- **Node.js 16 or higher** for `import` (ESM).
-- **`require()` needs Node.js ^20.19.0 or >=22.12.0** (synchronous `require(esm)`). On older Node.js versions, load the package with `import()` instead.
+- **Node.js ^20.19.0 or >=22.13.0.** The CommonJS entry loads the ES module build through synchronous `require(esm)`, which those versions provide (Node.js 22.12.x prints an `ExperimentalWarning` for it). On an older Node.js, `require()` fails with `ERR_REQUIRE_ESM` and a message saying to use `import()` instead.
 
 ### Install
 
@@ -221,6 +220,8 @@ try {
 ## 🤝 Contributing
 
 Contributions are welcome — open an [issue](https://github.com/CLDMV/wisp/issues) or a pull request.
+
+In a checkout, the package name resolves to the built `dist/` (run `npm run build` first). The `wisp-dev` export condition switches it to the source in `src/`: `src/index.mjs` for `import`, `src/index.cjs` for `require()`. Pass it per command (`node --conditions=wisp-dev app.mjs`) or once per shell (`export NODE_OPTIONS=--conditions=wisp-dev`). The test scripts set it themselves.
 
 [![Contributors]][contributors_url] [![Sponsor shinrai]][sponsor_url]
 
