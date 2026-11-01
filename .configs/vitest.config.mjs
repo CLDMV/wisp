@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-03T19:27:20-07:00 (1791080840)
+ *	@Last modified time: 2026-11-01T12:07:00-08:00 (1793563620)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -45,7 +45,7 @@ export default defineConfig({
 		reporters: ["dot"],
 		coverage: {
 			provider: "v8",
-			// Measured on src/ (ESM entry, library and the CJS shim). The published dist/ is
+			// Measured on src/ (ESM entry, library and the CJS entry src/index.cjs). The published dist/ is
 			// built from it and checked separately by tests/cjs + tests/bundle under node --test.
 			include: ["src/**/*.mjs", "src/**/*.cjs"],
 			exclude: ["**/*.json", "tests/**", "src/types/**"],

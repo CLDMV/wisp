@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-03T19:34:10-07:00 (1791081250)
+ *	@Last modified time: 2026-11-01T12:07:03-08:00 (1793563623)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -24,7 +24,9 @@
  *
  * The callers are fixture files in tests/fixtures/dist-caller/, run as their own Node process
  * with the repository root as the working directory: the data file they load exists only next
- * to them, not in dist/ and not in the working directory.
+ * to them, not in dist/ and not in the working directory. tests/fixtures/entry-caller/ loads the
+ * package by name instead; without the `wisp-dev` condition that resolves to dist/index.cjs
+ * (tests/cjs-entry.test.vitest.mjs runs the same fixture with the condition, against src/).
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -71,6 +73,21 @@ test("import of dist/index.mjs resolves relative paths against the calling file"
 
 test("require() of dist/index.cjs resolves relative paths against the calling file", () => {
 	assert.deepEqual(runCaller("cjs-caller.cjs"), expected);
+});
+
+test("require() of the package by name resolves dist/index.cjs and paths against the calling file", () => {
+	const res = spawnSync(process.execPath, [path.join(repoRoot, "tests", "fixtures", "entry-caller", "cjs-caller.cjs")], {
+		cwd: repoRoot,
+		encoding: "utf8"
+	});
+	assert.equal(res.status, 0, res.stderr);
+	assert.deepEqual(JSON.parse(res.stdout), {
+		entry: "dist/index.cjs",
+		sync: { resolvedFrom: "tests/fixtures/entry-caller" },
+		up: { ok: true },
+		async: { resolvedFrom: "tests/fixtures/entry-caller" },
+		sameObject: true
+	});
 });
 
 test("dist/index.mjs imported in-process resolves against this test file", () => {

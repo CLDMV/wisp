@@ -1,7 +1,7 @@
 /**
  *
  *	@Project: @cldmv/wisp
- *	@Filename: /src/cjs-shim.cjs
+ *	@Filename: /src/index.cjs
  *	@Date: 2025-10-30T15:06:33-07:00 (1761861993)
  *	@Author: Nate Corcoran <CLDMV>
  *	@Email: <Shinrai@users.noreply.github.com>
