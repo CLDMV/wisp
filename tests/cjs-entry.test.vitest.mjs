@@ -70,7 +70,7 @@ describe("src/index.cjs", () => {
 		expect(err).toBeInstanceOf(Error);
 		expect(err.code).toBe("ERR_REQUIRE_ESM");
 		expect(err.message).toMatch(
-			/^@cldmv\/wisp: require\(\) needs Node\.js \^20\.19\.0 or >=22\.13\.0 \(this is v[\d.]+\)\. On older Node\.js, load the package with import\(\) instead\.$/
+			/^@cldmv\/wisp: require\(\) needs Node\.js >=22\.22\.0 \(this is v[\d.]+\)\. On older Node\.js, load the package with import\(\) instead\.$/
 		);
 	});
 });

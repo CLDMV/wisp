@@ -56,7 +56,7 @@ Relative paths resolve from the file that calls wisp, not from wisp's own locati
 
 ### Requirements
 
-- **Node.js ^20.19.0 or >=22.13.0.** The CommonJS entry loads the ES module build through synchronous `require(esm)`, which those versions provide (Node.js 22.12.x prints an `ExperimentalWarning` for it). On an older Node.js, `require()` fails with `ERR_REQUIRE_ESM` and a message saying to use `import()` instead.
+- **Node.js >=22.22.0.** The CommonJS entry loads the ES module build through synchronous `require(esm)`, which that version provides. On an older Node.js, `require()` fails with `ERR_REQUIRE_ESM` and a message saying to use `import()` instead.
 
 ### Install
 

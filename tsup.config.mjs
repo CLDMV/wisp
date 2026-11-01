@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T12:09:45-08:00 (1793563785)
+ *	@Last modified time: 2026-11-01T13:14:16-08:00 (1793567656)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -23,7 +23,7 @@
  *    which is its sibling in both src/ and dist/.
  *
  * Constraints:
- *  - `target: "node20"` matches package.json `engines` (^20.19.0 || >=22.13.0), the floor
+ *  - `target: "node20"` is the syntax level; package.json `engines` is >=22.22.0, the floor
  *    the CJS entry needs for require(esm) (see src/index.cjs).
  *  - `supported["import-attributes"]` keeps esbuild from rejecting the
  *    `import(url, { with: { type } })` / `{ assert: { type } }` calls in src/wisp.mjs for a
