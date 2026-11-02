@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T13:14:15-08:00 (1793567655)
+ *	@Last modified time: 2026-11-01T16:21:38-08:00 (1793578898)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -35,10 +35,11 @@
 
 // This is a thin wrapper: it loads ./index.mjs through Node's synchronous require(esm).
 // Node.js versions without require(esm) would fail with a bare ERR_REQUIRE_ESM, so fail
-// early with a message that says what to do instead.
+// early with a message that says what to do instead. The floor is 22.13 rather than 22.12
+// because Node.js 22.12 has require(esm) but prints an ExperimentalWarning on every use.
 if (!process.features?.require_module) {
 	const error = new Error(
-		`@cldmv/wisp: require() needs Node.js >=22.22.0 (this is ${process.version}). On older Node.js, load the package with import() instead.`
+		`@cldmv/wisp: require() needs Node.js ^20.19.0 or >=22.13.0 (this is ${process.version}). On older Node.js, load the package with import() instead.`
 	);
 	error.code = "ERR_REQUIRE_ESM";
 	throw error;

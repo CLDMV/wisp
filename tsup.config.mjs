@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T13:14:16-08:00 (1793567656)
+ *	@Last modified time: 2026-11-01T16:21:39-08:00 (1793578899)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -23,11 +23,11 @@
  *    which is its sibling in both src/ and dist/.
  *
  * Constraints:
- *  - `target: "node20"` is the syntax level; package.json `engines` is >=22.22.0, the floor
- *    the CJS entry needs for require(esm) (see src/index.cjs).
+ *  - `target: "node16"` matches package.json `engines` (>=16) — `import` of the ESM build
+ *    keeps working there; only require() needs require(esm) (see src/index.cjs).
  *  - `supported["import-attributes"]` keeps esbuild from rejecting the
  *    `import(url, { with: { type } })` / `{ assert: { type } }` calls in src/wisp.mjs for a
- *    node20 target. They are runtime feature probes: wisp tries `with`, then `assert`, then
+ *    node16 target. They are runtime feature probes: wisp tries `with`, then `assert`, then
  *    fs, so they must reach Node exactly as written. Their `type` is a variable, so esbuild
  *    reports `unsupported-dynamic-import` (it cannot follow them, and must not); that
  *    expected warning is silenced.
@@ -52,7 +52,7 @@ export default defineConfig({
 	outExtension() {
 		return { js: ".mjs" };
 	},
-	target: "node20",
+	target: "node16",
 	platform: "node",
 	splitting: false,
 	sourcemap: true,
