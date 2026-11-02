@@ -129,12 +129,17 @@ describe("import() with `with` attributes", () => {
 	});
 });
 
-// Node.js 24+ does not cache a failed import: after `with { type: "javascript" }` rejects a URL,
-// the `assert` retry of that same URL loads it. Node.js 20 and 22 cache the failure, so the retry
+// Node.js 24+ (and 22.22+, where it was backported) does not cache a failed import: after `with { type: "javascript" }` rejects a URL,
+// the `assert` retry of that same URL loads it. Older lines cache the failure, so the retry
 // is rejected with the same error and wisp reports the unsupported type. The `assert` strategy can
-// only be reached this way on Node.js 24+, so those tests run there; older versions check the error.
-const nodeMajor = Number(process.versions.node.split(".")[0]);
-const retriesFailedImport = nodeMajor >= 24;
+// only be reached this way where the retry happens, so those tests run there; elsewhere the error is checked.
+// Detected by behavior rather than version.
+const probeUrl = "data:text/javascript,export default 1";
+await import(probeUrl, { with: { type: "javascript" } }).catch(() => {});
+const retriesFailedImport = await import(probeUrl).then(
+	() => true,
+	() => false
+);
 
 describe.runIf(retriesFailedImport)("import() with legacy `assert` attributes", () => {
 	// Node.js only checks import attributes on a module's first load; once a URL is in the module
@@ -241,7 +246,7 @@ describe.runIf(retriesFailedImport)("import() with legacy `assert` attributes", 
 	});
 });
 
-describe.skipIf(retriesFailedImport)("import() of an unsupported type on Node.js < 24", () => {
+describe.skipIf(retriesFailedImport)("import() of an unsupported type on Node.js without failed-import retry", () => {
 	let counter = 0;
 	const fresh = (file) => `${pathToFileURL(path.join(fixtures, file)).href}?legacy=${++counter}`;
 
