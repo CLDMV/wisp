@@ -16,7 +16,7 @@ Relative paths resolve from the file that calls wisp, not from wisp's own locati
 
 ### Latest: v1.0.9 (November 2026)
 
-- **Node.js 22.22.0 or newer is required** — `engines.node` moves from `>=16.0.0` to `>=22.22.0`, and the CommonJS entry's `ERR_REQUIRE_ESM` message names the new floor. The build and test toolchain needs Node.js 22.22, so older versions can no longer be tested. JSON loading is unchanged ([#65](https://github.com/CLDMV/wisp/pull/65)).
+- **Node.js support unchanged** — `engines.node` stays `>=16.0.0`; the CommonJS entry's `ERR_REQUIRE_ESM` message now names the `require()` range, `^20.19.0` or `>=22.13.0`. JSON loading is unchanged ([#65](https://github.com/CLDMV/wisp/pull/65)).
 - **CommonJS entry renamed in source** — `src/cjs-shim.cjs` is now `src/index.cjs`, matching the published `dist/index.cjs`, with new tests that relative paths still resolve against the calling file through the CommonJS entry ([#65](https://github.com/CLDMV/wisp/pull/65)).
 - [View full v1.0.9 Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.9.md)
 
@@ -57,7 +57,9 @@ Relative paths resolve from the file that calls wisp, not from wisp's own locati
 
 ### Requirements
 
-- **Node.js >=22.22.0.** The CommonJS entry loads the ES module build through synchronous `require(esm)`, which that version provides. On an older Node.js, `require()` fails with `ERR_REQUIRE_ESM` and a message saying to use `import()` instead.
+- **Node.js 16 or higher** for `import` (ESM).
+- **`require()` needs Node.js ^20.19.0 or >=22.13.0** (synchronous `require(esm)`). On older Node.js versions, load the package with `import()` instead.
+- **Developing wisp needs Node.js 22.22.0 or later** (enforced via `devEngines`), while the package itself runs on Node.js 16+.
 
 ### Install
 
