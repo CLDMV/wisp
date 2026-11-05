@@ -13,7 +13,8 @@
  *
  */
 
-import { defineConfig } from "vitest/config";
+import { defineConfig, mergeConfig } from "vitest/config";
+import { devCondition } from "@cldmv/configs/vitest.config.mjs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -21,49 +22,40 @@ import path from "node:path";
 // matter what cwd vitest is invoked from.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-export default defineConfig({
-	root,
-	resolve: {
-		// Replaces the defaults, so keep the usual ones alongside the package's own
-		// condition (which routes the "." export to src/).
-		conditions: ["wisp-dev", "module", "browser", "development|production"]
-	},
-	ssr: {
-		// Vitest often goes through the SSR resolve pipeline even in node tests.
-		resolve: {
-			conditions: ["wisp-dev", "node", "development|production"]
+// devCondition() reads the package's "-dev" export condition and sets resolve/ssr conditions plus test.execArgv, so
+// Vite and the Node workers both load src/.
+export default mergeConfig(
+	devCondition({ root }),
+	defineConfig({
+		root,
+		test: {
+			include: ["tests/**/*.test.vitest.mjs"],
+			exclude: ["node_modules"],
+			environment: "node",
+			testTimeout: 30000,
+			// Run test files and the code under test through Node's native import()
+			// instead of Vite's module runner. wisp's behaviour depends on Node's real
+			// dynamic-import semantics (import attributes `with` / legacy `assert`, JSON
+			// module loading); the module runner ignores import attributes and loads JSON
+			// itself, so under it the suite would exercise Vite rather than Node.
+			// nodeLoader: false also skips Vitest's own loader transform (only needed for
+			// vi.mock / import.meta.vitest, which this suite does not use), so V8 coverage is
+			// measured against the files exactly as Node runs them.
+			experimental: {
+				viteModuleRunner: false,
+				nodeLoader: false
+			},
+			// "dot" keeps CI logs to one character per test file; the final
+			// "Test Files X passed" / "Tests Y passed" summary is unaffected.
+			reporters: ["dot"],
+			coverage: {
+				provider: "v8",
+				// Measured on src/ (ESM entry, library and the CJS entry src/index.cjs). The published dist/ is
+				// built from it and checked separately by tests/cjs + tests/bundle under node --test.
+				include: ["src/**/*.mjs", "src/**/*.cjs"],
+				exclude: ["**/*.json", "tests/**", "src/types/**"],
+				reporter: ["text", "html", "json-summary", "json"]
+			}
 		}
-	},
-	test: {
-		include: ["tests/**/*.test.vitest.mjs"],
-		exclude: ["node_modules"],
-		environment: "node",
-		testTimeout: 30000,
-		// Workers get the condition on their node CLI (execArgv), so Node's own resolver
-		// loads src/ for the package name too.
-		nodeOptions: ["--conditions=wisp-dev"],
-		// Run test files and the code under test through Node's native import()
-		// instead of Vite's module runner. wisp's behaviour depends on Node's real
-		// dynamic-import semantics (import attributes `with` / legacy `assert`, JSON
-		// module loading); the module runner ignores import attributes and loads JSON
-		// itself, so under it the suite would exercise Vite rather than Node.
-		// nodeLoader: false also skips Vitest's own loader transform (only needed for
-		// vi.mock / import.meta.vitest, which this suite does not use), so V8 coverage is
-		// measured against the files exactly as Node runs them.
-		experimental: {
-			viteModuleRunner: false,
-			nodeLoader: false
-		},
-		// "dot" keeps CI logs to one character per test file; the final
-		// "Test Files X passed" / "Tests Y passed" summary is unaffected.
-		reporters: ["dot"],
-		coverage: {
-			provider: "v8",
-			// Measured on src/ (ESM entry, library and the CJS entry src/index.cjs). The published dist/ is
-			// built from it and checked separately by tests/cjs + tests/bundle under node --test.
-			include: ["src/**/*.mjs", "src/**/*.cjs"],
-			exclude: ["**/*.json", "tests/**", "src/types/**"],
-			reporter: ["text", "html", "json-summary", "json"]
-		}
-	}
-});
+	})
+);
