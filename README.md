@@ -224,7 +224,7 @@ try {
 
 Contributions are welcome — open an [issue](https://github.com/CLDMV/wisp/issues) or a pull request.
 
-In a checkout, the package name resolves to the built `dist/` (run `npm run build` first). The `wisp-dev` export condition switches it to the source in `src/`: `src/index.mjs` for `import`, `src/index.cjs` for `require()`. Pass it per command (`node --conditions=wisp-dev app.mjs`) or once per shell (`export NODE_OPTIONS=--conditions=wisp-dev`). The test scripts set it themselves.
+In a checkout, the package name resolves to the built `dist/` (run `npm run build` first). The `wisp-dev` export condition switches it to the source in `src/`: `src/index.mjs` for `import`, `src/index.cjs` for `require()`. Pass it per command (`node --conditions=wisp-dev app.mjs`) or once per shell (`export NODE_OPTIONS=--conditions=wisp-dev`). The test scripts set it themselves: `npm test` runs the suite against `src/`, and `npm run test:dist` builds the package and runs it against `dist/`.
 
 [![Contributors]][contributors_url] [![Sponsor shinrai]][sponsor_url]
 
