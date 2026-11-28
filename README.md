@@ -14,18 +14,18 @@ Relative paths resolve from the file that calls wisp, not from wisp's own locati
 
 ## ✨ What's New
 
-### Latest: v1.0.9 (November 2026)
+### Latest: v2.0.0 (November 2026)
 
-- **Node.js support unchanged** — `engines.node` stays `>=16.0.0`; the CommonJS entry's `ERR_REQUIRE_ESM` message now names the `require()` range, `^20.19.0` or `>=22.13.0`. Developing wisp needs Node.js 22.22.0, declared in `devEngines` so it never applies to consumers. JSON loading is unchanged ([#65](https://github.com/CLDMV/wisp/pull/65), [#70](https://github.com/CLDMV/wisp/pull/70)).
-- **CommonJS entry renamed in source** — `src/cjs-shim.cjs` is now `src/index.cjs`, matching the published `dist/index.cjs`, with new tests that relative paths still resolve against the calling file through the CommonJS entry ([#65](https://github.com/CLDMV/wisp/pull/65)).
-- [View full v1.0.9 Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.9.md)
+- **`require("@cldmv/wisp")` returns the module object** — the CommonJS entry now gives back `{ default, wisp, wispSync }`, the same exports as `import`, instead of the `wisp` function. Change `require(x)(…)` to `require(x).wisp(…)` or `const { wisp } = require(x)`; `.wisp`, `.wispSync`, `.default` and destructuring keep working, and ESM `import` is unchanged ([#86](https://github.com/CLDMV/wisp/pull/86)).
+- **Tests also run against the build** — `npm test` now includes `test:dist`, which builds the package and runs the suite against `dist/` ([#74](https://github.com/CLDMV/wisp/pull/74)).
+- [View full v2.0.0 Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v2/v2.0.0.md)
 
 ### Recent Releases
 
+- **v1.0.9** (November 2026) — CommonJS entry renamed to `src/index.cjs` in source, caller-resolution tests through it, and the Node.js 22.22 development floor in `devEngines`; no change for consumers ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.9.md))
 - **v1.0.8** (October 2026) — Development-dependency patch (`@types/node` 26.6.4); no runtime change ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.8.md))
 - **v1.0.7** (October 2026) — `require()` works inside esbuild and webpack bundles and fails clearly on older Node.js; a failed `validate` throws instead of loading the `fallback`; the package is now built into `dist/` and relicensed under Apache-2.0 ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.7.md))
 - **v1.0.6** (October 2026) — Uniform file headers via `@cldmv/fix-headers`, a CI fix and a development-dependency security update; no runtime change ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.6.md))
-- **v1.0.5** (October 2026) — First npm release since v1.0.1; TypeScript 6, chai 6 and `@types/node` 26 for development, v4 workflow syncs; no runtime change ([Changelog](https://github.com/CLDMV/wisp/blob/master/docs/changelog/v1/v1.0.5.md))
 
 📚 **For complete version history and detailed release notes, see the [docs/changelog/](https://github.com/CLDMV/wisp/tree/master/docs/changelog/) folder.**
 
