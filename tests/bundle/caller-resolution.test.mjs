@@ -1,13 +1,13 @@
 /**
  *
  *	@Project: @cldmv/wisp
- *	@Filename: /tests/bundle/caller-resolution.test.mjs
+ *	@Filename: tests/bundle/caller-resolution.test.mjs
  *	@Date: 2026-10-03T19:32:55-07:00 (1791081175)
  *	@Author: Nate Corcoran <CLDMV>
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T12:07:03-08:00 (1793563623)
+ *	@Last modified time: 2026-11-28T09:53:27-08:00 (1795888407)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
