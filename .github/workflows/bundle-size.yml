@@ -1,12 +1,12 @@
 #
 #	@Project: @cldmv/wisp
-#	@Filename: /.github/workflows/bundle-size.yml
+#	@Filename: .github/workflows/bundle-size.yml
 #	@Date: 2026-05-20T00:00:00-07:00 (1779260400)
 #	@Author: Nate Corcoran <CLDMV>
 #	@Email: <Shinrai@users.noreply.github.com>
 #	-----
 #	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
-#	@Last modified time: 2026-10-02T15:12:03-07:00 (1790979123)
+#	@Last modified time: 2026-11-28T09:53:22-08:00 (1795888402)
 #	-----
 #	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
 #
@@ -40,7 +40,7 @@ jobs:
         with:
             build_command: "npm run build:ci"
             # Every pattern starts with `*` on purpose: the v4.29.2 measure action matches nothing for a bare top-level file and double-counts files when patterns have different roots.
-            dist_paths: "*dist/index.mjs,*dist/index.cjs"
+            dist_paths: "dist/**.mjs,dist/**.cjs"
             # warning_pct: 5
             # warning_bytes: 500
             # comment_mode: "update"

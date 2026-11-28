@@ -1,13 +1,13 @@
 /**
  *
  *	@Project: @cldmv/wisp
- *	@Filename: /tests/resolve-from-caller.test.vitest.mjs
+ *	@Filename: tests/resolve-from-caller.test.vitest.mjs
  *	@Date: 2026-10-03T19:24:51-07:00 (1791080691)
  *	@Author: Nate Corcoran <CLDMV>
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-03T19:27:21-07:00 (1791080841)
+ *	@Last modified time: 2026-11-28T09:53:28-08:00 (1795888408)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -214,7 +214,7 @@ describe("base-file selection from the call stack", () => {
 
 describe("package root detection", () => {
 	it("still resolves caller-relative paths when no package.json is found above the resolver", async () => {
-		// A copy of the resolver bundled somewhere without a package.json above it has no package root:
+		// A copy of the resolver copied somewhere without a package.json above it has no package root:
 		// nothing is classified as src/ or an index file, so every lookup goes through the fallback frame.
 		vi.spyOn(fs, "existsSync").mockReturnValue(false);
 		const mod = await import(`../src/lib/resolve-from-caller.mjs?no-package-root=${Date.now()}`);

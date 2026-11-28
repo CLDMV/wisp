@@ -1,13 +1,13 @@
 /**
  *
  *	@Project: @cldmv/wisp
- *	@Filename: /.configs/vitest.config.mjs
+ *	@Filename: .configs/vitest.config.mjs
  *	@Date: 2026-10-03T19:21:07-07:00 (1791080467)
  *	@Author: Nate Corcoran <CLDMV>
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-07T21:34:25-08:00 (1794116065)
+ *	@Last modified time: 2026-11-28T09:53:20-08:00 (1795888400)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) =>
 				coverage: {
 					provider: "v8",
 					// Measured on src/ (ESM entry, library and the CJS entry src/index.cjs). The published dist/ is
-					// built from it and checked separately by tests/cjs + tests/bundle under node --test.
+					// built from it and checked separately by tests/cjs + tests/built under node --test.
 					include: ["src/**/*.mjs", "src/**/*.cjs"],
 					exclude: ["**/*.json", "tests/**", "src/types/**"],
 					reporter: ["text", "html", "json-summary", "json"]

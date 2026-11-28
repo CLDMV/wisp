@@ -1,13 +1,13 @@
 /**
  *
  *	@Project: @cldmv/wisp
- *	@Filename: /tests/bundle/caller-resolution.test.mjs
+ *	@Filename: tests/built/caller-resolution.test.mjs
  *	@Date: 2026-10-03T19:32:55-07:00 (1791081175)
  *	@Author: Nate Corcoran <CLDMV>
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-11-01T12:07:03-08:00 (1793563623)
+ *	@Last modified time: 2026-11-28T09:53:27-08:00 (1795888407)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -18,9 +18,10 @@
  * runner (`node --test`, via `npm run test:cjs`, which builds first).
  *
  * wisp resolves a relative path from its CALLER's file by walking the V8 call stack
- * (src/lib/resolve-from-caller.mjs). Bundling and minifying merge the resolver and the library
- * into dist/index.mjs, so these tests make sure the built output still resolves against the
- * calling file — for both `import` and `require()` — and never against dist/.
+ * (src/lib/resolve-from-caller.mjs). dist/ holds one minified file per src/ module (dist/index.mjs,
+ * dist/wisp.mjs and dist/lib/resolve-from-caller.mjs are separate files), so these tests make sure the
+ * resolver skips every one of wisp's own frames and still resolves against the calling file — for both
+ * `import` and `require()` — and never against dist/.
  *
  * The callers are fixture files in tests/fixtures/dist-caller/, run as their own Node process
  * with the repository root as the working directory: the data file they load exists only next
@@ -31,7 +32,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { wispSync } from "../../dist/index.mjs";
@@ -46,7 +47,7 @@ const expected = {
 	async: { resolvedFrom: "tests/fixtures/dist-caller" },
 	// wisp() returns the cached JSON module object only when the import-attributes path
 	// (`import(url, { with: { type: "json" } })`) loaded it; the fs fallback parses a fresh
-	// object on every call. Identity therefore shows the bundle kept the attributes.
+	// object on every call. Identity therefore shows the build kept the attributes.
 	sameObject: true
 };
 
@@ -107,4 +108,21 @@ test("import of the package by name resolves dist/index.mjs and paths against th
 
 test("dist/index.mjs imported in-process resolves against this test file", () => {
 	assert.deepEqual(wispSync("../fixtures/dist-caller/caller-data.json"), expected.sync);
+});
+
+test("dist/ has one file per src/ module and no chunks", () => {
+	const distDir = path.join(repoRoot, "dist");
+	const files = readdirSync(distDir, { recursive: true })
+		.map(String)
+		.filter((file) => !file.endsWith(".map"))
+		.map((file) => file.split(path.sep).join("/"))
+		.sort();
+	assert.deepEqual(files, ["index.cjs", "index.mjs", "lib", "lib/resolve-from-caller.mjs", "wisp.mjs"]);
+});
+
+test("the resolver runs from its own dist file, so wisp's frames come from three separate files", async () => {
+	const resolver = await import("../../dist/lib/resolve-from-caller.mjs");
+	assert.equal(typeof resolver.resolvePathFromCaller, "function");
+	// Called straight from this test file, the resolver (a separate dist file) resolves against this file.
+	assert.equal(resolver.resolvePathFromCaller("./caller-resolution.test.mjs"), fileURLToPath(import.meta.url));
 });
