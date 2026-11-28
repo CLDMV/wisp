@@ -25,8 +25,8 @@
  * The callers are fixture files in tests/fixtures/dist-caller/, run as their own Node process
  * with the repository root as the working directory: the data file they load exists only next
  * to them, not in dist/ and not in the working directory. tests/fixtures/entry-caller/ loads the
- * package by name instead; without the `wisp-dev` condition that resolves to dist/index.cjs
- * (tests/cjs-entry.test.vitest.mjs runs the same fixture with the condition, against src/).
+ * package by name instead; without the `wisp-dev` condition that resolves to dist/index.cjs and
+ * dist/index.mjs (tests/cjs-entry.test.vitest.mjs runs the same fixtures with the condition, against src/).
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -83,6 +83,21 @@ test("require() of the package by name resolves dist/index.cjs and paths against
 	assert.equal(res.status, 0, res.stderr);
 	assert.deepEqual(JSON.parse(res.stdout), {
 		entry: "dist/index.cjs",
+		sync: { resolvedFrom: "tests/fixtures/entry-caller" },
+		up: { ok: true },
+		async: { resolvedFrom: "tests/fixtures/entry-caller" },
+		sameObject: true
+	});
+});
+
+test("import of the package by name resolves dist/index.mjs and paths against the calling file", () => {
+	const res = spawnSync(process.execPath, [path.join(repoRoot, "tests", "fixtures", "entry-caller", "esm-caller.mjs")], {
+		cwd: repoRoot,
+		encoding: "utf8"
+	});
+	assert.equal(res.status, 0, res.stderr);
+	assert.deepEqual(JSON.parse(res.stdout), {
+		entry: "dist/index.mjs",
 		sync: { resolvedFrom: "tests/fixtures/entry-caller" },
 		up: { ok: true },
 		async: { resolvedFrom: "tests/fixtures/entry-caller" },
