@@ -48,12 +48,17 @@ afterEach(() => {
 });
 
 describe("src/index.cjs", () => {
-	it("re-exports the ESM entry's functions", () => {
+	it("returns the module object with the ESM entry's functions", () => {
 		const cjs = require("../src/index.cjs");
-		expect(cjs).toBe(esm.default);
+		expect(typeof cjs).toBe("object");
+		expect(cjs).not.toBe(esm.default);
 		expect(cjs.default).toBe(esm.default);
+		expect(cjs.wisp).toBe(cjs.default);
 		expect(cjs.wisp).toBe(esm.wisp);
 		expect(cjs.wispSync).toBe(esm.wispSync);
+		expect(typeof cjs.wisp).toBe("function");
+		expect(typeof cjs.wispSync).toBe("function");
+		expect(Object.keys(cjs).sort()).toEqual(["__esModule", "default", "wisp", "wispSync"]);
 	});
 
 	it("throws ERR_REQUIRE_ESM with guidance when require(esm) is unavailable", () => {

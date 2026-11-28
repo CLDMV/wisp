@@ -97,6 +97,8 @@ wisp("./config.json").then((config) => {
 const data = wispSync("./data.json");
 ```
 
+`require("@cldmv/wisp")` returns the module object, the same exports as `import`: `{ default, wisp, wispSync }`. It is not the `wisp` function itself, so call `require("@cldmv/wisp").wisp(...)` (or destructure as above); `.default` is the same function as `.wisp`.
+
 ---
 
 ## 📖 API Reference

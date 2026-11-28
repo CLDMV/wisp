@@ -4,12 +4,12 @@
 "use strict";
 
 const path = require("node:path");
-const wisp = require("@cldmv/wisp");
+const { wisp, wispSync } = require("@cldmv/wisp");
 
 const entry = path.relative(path.resolve(__dirname, "..", "..", ".."), require.resolve("@cldmv/wisp")).split(path.sep).join("/");
-const sync = wisp.wispSync("./caller-data.json");
-const up = wisp.wispSync("../nested/ok.json");
+const sync = wispSync("./caller-data.json");
+const up = wispSync("../nested/ok.json");
 
-Promise.all([wisp("./caller-data.json"), wisp.wisp("./caller-data.json")]).then(([first, second]) => {
+Promise.all([wisp("./caller-data.json"), require("@cldmv/wisp").default("./caller-data.json")]).then(([first, second]) => {
 	process.stdout.write(JSON.stringify({ entry, sync, up, async: first, sameObject: first === second }));
 });
