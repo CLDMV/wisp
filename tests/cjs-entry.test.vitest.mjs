@@ -29,7 +29,7 @@
  * The caller-resolution tests check that a relative path passed through the CJS entry still
  * resolves against the calling file and not against src/: once in-process, and once from a
  * fixture that loads the package by name under `--conditions=wisp-dev` in its own Node process.
- * tests/bundle/caller-resolution.test.mjs runs the same fixture against the built dist/index.cjs.
+ * tests/built/caller-resolution.test.mjs runs the same fixture against the built dist/index.cjs.
  */
 
 import { describe, it, expect, afterEach } from "vitest";

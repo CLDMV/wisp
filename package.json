@@ -19,12 +19,12 @@
 		}
 	},
 	"scripts": {
-		"build": "tsup",
+		"build": "node scripts/build.mjs",
 		"build:ci": "npm run lint && npm run format:check && npm run types:build && npm run build && npm run test && npm run test:types",
 		"prepack": "npm run types:build && npm run build",
 		"prepare": "node -e \"import('./.githooks/install.mjs').catch(()=>{})\"",
 		"test": "node tests/run-vitest.mjs && npm run test:cjs && npm run test:dist",
-		"test:cjs": "npm run build && node --conditions=wisp-dev --test tests/cjs/entry.test.cjs tests/bundle/caller-resolution.test.mjs",
+		"test:cjs": "npm run build && node --conditions=wisp-dev --test tests/cjs/entry.test.cjs tests/built/caller-resolution.test.mjs",
 		"test:dist": "npm run build && node tests/run-vitest.mjs --mode=dist",
 		"test:watch": "vitest --config .configs/vitest.config.mjs",
 		"coverage": "node tests/run-vitest.mjs --coverage-quiet && npm run test:cjs",
@@ -95,10 +95,10 @@
 		"@eslint/markdown": "^8.0.3",
 		"@types/node": "^26.6.6",
 		"@vitest/coverage-v8": "^5.0.5",
+		"esbuild": "^0.28.2",
 		"eslint": "^10.14.0",
 		"globals": "^17.14.0",
 		"prettier": "^3.9.10",
-		"tsup": "^9.0.0",
 		"typescript": "^6.0.3",
 		"vitest": "^5.0.5"
 	},

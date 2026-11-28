@@ -214,7 +214,7 @@ describe("base-file selection from the call stack", () => {
 
 describe("package root detection", () => {
 	it("still resolves caller-relative paths when no package.json is found above the resolver", async () => {
-		// A copy of the resolver bundled somewhere without a package.json above it has no package root:
+		// A copy of the resolver copied somewhere without a package.json above it has no package root:
 		// nothing is classified as src/ or an index file, so every lookup goes through the fallback frame.
 		vi.spyOn(fs, "existsSync").mockReturnValue(false);
 		const mod = await import(`../src/lib/resolve-from-caller.mjs?no-package-root=${Date.now()}`);

@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) =>
 				coverage: {
 					provider: "v8",
 					// Measured on src/ (ESM entry, library and the CJS entry src/index.cjs). The published dist/ is
-					// built from it and checked separately by tests/cjs + tests/bundle under node --test.
+					// built from it and checked separately by tests/cjs + tests/built under node --test.
 					include: ["src/**/*.mjs", "src/**/*.cjs"],
 					exclude: ["**/*.json", "tests/**", "src/types/**"],
 					reporter: ["text", "html", "json-summary", "json"]
