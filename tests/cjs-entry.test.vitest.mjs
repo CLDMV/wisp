@@ -80,7 +80,7 @@ describe("src/index.cjs", () => {
 	});
 });
 
-describe("caller resolution through src/index.cjs", () => {
+describe("caller resolution through the src/ entries", () => {
 	it("resolves relative paths against the calling file in-process", () => {
 		const cjs = require("../src/index.cjs");
 		expect(cjs.wispSync("./fixtures/sample.json")).toEqual({ foo: "bar", nested: { ok: true } });
@@ -99,6 +99,25 @@ describe("caller resolution through src/index.cjs", () => {
 		expect(res.status, res.stderr).toBe(0);
 		expect(JSON.parse(res.stdout)).toEqual({
 			entry: "src/index.cjs",
+			sync: { resolvedFrom: "tests/fixtures/entry-caller" },
+			up: { ok: true },
+			async: { resolvedFrom: "tests/fixtures/entry-caller" },
+			sameObject: true
+		});
+	});
+
+	it("resolves relative paths against an ESM caller importing the package under wisp-dev", () => {
+		const res = spawnSync(
+			process.execPath,
+			["--conditions=wisp-dev", path.join(repoRoot, "tests", "fixtures", "entry-caller", "esm-caller.mjs")],
+			{
+				cwd: repoRoot,
+				encoding: "utf8"
+			}
+		);
+		expect(res.status, res.stderr).toBe(0);
+		expect(JSON.parse(res.stdout)).toEqual({
+			entry: "src/index.mjs",
 			sync: { resolvedFrom: "tests/fixtures/entry-caller" },
 			up: { ok: true },
 			async: { resolvedFrom: "tests/fixtures/entry-caller" },

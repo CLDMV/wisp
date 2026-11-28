@@ -152,10 +152,6 @@ function findPackageRoot(startPath) {
 const PACKAGE_ROOT = findPackageRoot(THIS_FILE);
 
 /* ---------- base selection (shared) ---------- */
-// Two-flag state machine for detecting when we've exited package infrastructure:
-// 1) Flag 1: Set when we exit src/ or dist/ directories
-// 2) Flag 2: Set when we exit index.* entry point files
-// 3) Once both flags are set, we've found the actual caller outside the package
 
 /**
  * @function pickPrimaryBaseFile
@@ -164,33 +160,27 @@ const PACKAGE_ROOT = findPackageRoot(THIS_FILE);
  * @returns {string|null} Primary base file path for resolution, null if detection fails
  *
  * @description
- * Find the primary base file using stack trace analysis with a two-flag state machine.
- * Tracks when we **exit** from package infrastructure directories/files.
+ * Find the caller's file from the stack: the first frame after the stack leaves the package's
+ * `src/` or `dist/` folder. Every entry point (`src/index.mjs`, `src/index.cjs`, `dist/index.mjs`,
+ * `dist/index.cjs`) lives in one of those folders, so the first frame outside them is the code
+ * that called wisp.
  *
  * Algorithm:
- * 1. Walk stack trace backwards (from deepest to shallowest calls)
- * 2. Flag 1: Set when we exit src/ or dist/ folder (transition from src/dist to non-src/dist)
- * 3. Flag 2: Set when we exit index.* files (transition from index.* to non-index.*)
- * 4. Once both flags are set, we've fully exited the package infrastructure
- * 5. Return the current file as the actual caller
+ * 1. Walk the stack from the deepest call outwards, skipping frames with no file name,
+ *    `node:internal` frames and this file.
+ * 2. Note whether each frame is in the package's `src/` or `dist/`.
+ * 3. Return the first frame that is not, once a frame that is has been seen.
+ * 4. Return null if the stack never leaves `src/` or `dist/`; the caller then uses the fallback.
  *
  * @example
  * // Stack trace flow (wisp example):
- * // 0: src/lib/resolve-from-caller.mjs [in src/]
- * // 1: src/wisp.mjs [still in src/]
- * // 2: index.mjs [exited src/ - Flag 1 set]
- * // 3: user-code.mjs [exited index.* - Flag 2 set, return this!]
+ * // 0: src/lib/resolve-from-caller.mjs [skipped, this file]
+ * // 1: src/wisp.mjs [in src/]
+ * // 2: src/index.mjs [in src/]
+ * // 3: user-code.mjs [left src/, return this]
  */
 function pickPrimaryBaseFile() {
-	let exitedSrcOrDist = false; // Flag 1: Have we exited src/ or dist/?
-	// This function's own docstring documents a "Flag 2 set, return this!"
-	// scenario, but nothing reads exitedIndex to return early once it's set --
-	// looks like a pre-existing gap between the documented intent and the
-	// implementation. Left as-is; fixing the behavior is a separate decision
-	// from unblocking lint.
-	let exitedIndex = false; // Flag 2: Have we exited index.*?
 	let previousWasInSrcOrDist = false;
-	let previousWasIndex = false;
 
 	for (const cs of getStack(pickPrimaryBaseFile)) {
 		const f = toFsPath(cs?.getFileName?.());
@@ -199,39 +189,17 @@ function pickPrimaryBaseFile() {
 		if (f === THIS_FILE) continue;
 
 		let currentIsInSrcOrDist = false;
-		let currentIsIndex = false;
-
-		// Check if this file is in our package
 		if (PACKAGE_ROOT && f.startsWith(PACKAGE_ROOT + path.sep)) {
-			const relativePath = path.relative(PACKAGE_ROOT, f);
-			const segments = relativePath.split(path.sep);
-
-			// Check if current file is in src/ or dist/
-			currentIsInSrcOrDist = segments[0] === "src" || segments[0] === "dist";
-
-			// Check if current file is index.*
-			currentIsIndex = segments.length === 1 && /^index\.(mjs|cjs|js|ts)$/.test(segments[0]);
+			const [topFolder] = path.relative(PACKAGE_ROOT, f).split(path.sep);
+			currentIsInSrcOrDist = topFolder === "src" || topFolder === "dist";
 		}
 
-		// Flag 1: Check if we've exited src/dist (was in, now not in)
+		// The first frame after the stack leaves src/ or dist/ is the caller.
 		if (previousWasInSrcOrDist && !currentIsInSrcOrDist) {
-			exitedSrcOrDist = true;
-		}
-
-		// Flag 2: Check if we've exited index.* (was index, now not index)
-		if (previousWasIndex && !currentIsIndex) {
-			// eslint-disable-next-line no-unused-vars -- see the declaration above
-			exitedIndex = true;
-		}
-
-		// If we've exited src/dist, we've found the caller (index.mjs might be optimized away)
-		if (exitedSrcOrDist) {
 			return f;
 		}
 
-		// Update previous state for next iteration
 		previousWasInSrcOrDist = currentIsInSrcOrDist;
-		previousWasIndex = currentIsIndex;
 	}
 	return null;
 }
