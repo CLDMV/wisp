@@ -28,16 +28,19 @@ const path = require("node:path");
 
 const repoRoot = path.resolve(__dirname, "..", "..");
 
-test("require() returns the same wisp object as import", async () => {
+test("require() returns the module object, matching import", async () => {
 	const cjs = require("../../dist/index.cjs");
 	const esm = await import("../../dist/index.mjs");
 
-	assert.equal(cjs, esm.default);
+	assert.equal(typeof cjs, "object");
+	assert.notEqual(cjs, esm.default);
 	assert.equal(cjs.default, esm.default);
+	assert.equal(cjs.wisp, cjs.default);
 	assert.equal(cjs.wisp, esm.wisp);
 	assert.equal(cjs.wispSync, esm.wispSync);
 	assert.equal(typeof cjs.wisp, "function");
 	assert.equal(typeof cjs.wispSync, "function");
+	assert.deepEqual(Object.keys(cjs).sort(), ["__esModule", "default", "wisp", "wispSync"]);
 });
 
 test("require() fails with a clear message where Node.js has no require(esm)", () => {

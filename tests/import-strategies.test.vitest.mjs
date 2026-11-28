@@ -7,7 +7,7 @@
  *	@Email: <Shinrai@users.noreply.github.com>
  *	-----
  *	@Last modified by: Nate Corcoran <CLDMV> (Shinrai@users.noreply.github.com)
- *	@Last modified time: 2026-10-03T19:27:21-07:00 (1791080841)
+ *	@Last modified time: 2026-11-07T21:34:27-08:00 (1794116067)
  *	-----
  *	@Copyright: Copyright (c) 2013-2026 Catalyzed Motivation Inc. All rights reserved.
  *
@@ -30,7 +30,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { wisp, wispSync } from "../src/index.mjs";
+import { wisp, wispSync } from "@cldmv/wisp";
 
 const fixtures = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures");
 const sample = path.join(fixtures, "sample.json");
